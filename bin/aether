@@ -1,0 +1,44 @@
+#!/bin/sh
+# Aether launcher: prefer the system Python (it owns the GTK bindings); works from the source tree or an install.
+#   aether [files/folders...]   open them
+#   aether --doctor             check that everything Aether needs is installed
+#   aether --version
+#   aether --update             download and install the newest version
+#   aether --uninstall          remove Aether
+HERE="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+# Use a Python that can import the GTK bindings (pyenv / conda pythons usually can't).
+PY="$AETHER_PYTHON"
+if [ -z "$PY" ]; then
+  for c in /usr/bin/python3 "$(command -v python3 2>/dev/null)" /usr/bin/python3.14 /usr/bin/python3.13 /usr/bin/python3.12 \
+           /usr/bin/python3.11 /usr/bin/python3.10 /usr/bin/python3.9 /usr/local/bin/python3; do
+    if [ -n "$c" ] && [ -x "$c" ] && "$c" -c 'import gi' 2>/dev/null; then PY="$c"; break; fi
+  done
+  [ -z "$PY" ] && PY="$(command -v python3 2>/dev/null)"
+fi
+if [ -z "$PY" ]; then echo "aether: python3 not found" >&2; exit 1; fi
+for d in "$HERE/.." "$HERE/../share/aether" "$HOME/.local/share/aether" /usr/local/share/aether /usr/share/aether /usr/lib/aether /opt/aether; do
+  if [ -d "$d/aether" ]; then
+    case "$1" in
+      --doctor|--check) exec "$PY" -c "import sys; sys.path.insert(0, '$d'); from aether.doctor import main; sys.exit(main())" ;;
+      --version|-v)     exec "$PY" -c "import sys; sys.path.insert(0, '$d'); import aether; print('Aether', aether.VERSION)" ;;
+      --update)
+        REPO=$(sed -n 's/^REPO = "\([^"]*\)".*/\1/p' "$d/aether/__init__.py")
+        echo "Updating Aether from github.com/${REPO:-rxvy-dev/aether}…"
+        if command -v curl >/dev/null; then curl -fsSL "https://raw.githubusercontent.com/${REPO:-rxvy-dev/aether}/main/get.sh" | AETHER_REPO="$REPO" bash -s -- -y
+        else wget -qO- "https://raw.githubusercontent.com/${REPO:-rxvy-dev/aether}/main/get.sh" | AETHER_REPO="$REPO" bash -s -- -y; fi
+        exit $? ;;
+      --uninstall)
+        SRC="${XDG_DATA_HOME:-$HOME/.local/share}/aether-src"
+        if [ -x "$SRC/install.sh" ]; then exec "$SRC/install.sh" --uninstall; fi
+        P="$(cd "$d/../.." 2>/dev/null && pwd)"
+        S=""; [ -w "$P/bin" ] || S=sudo
+        $S rm -rf "$P/share/aether" "$P/bin/aether" "$P/share/applications/io.github.aether.Editor.desktop" \
+                  "$P/share/metainfo/io.github.aether.Editor.metainfo.xml" "$P/share/licenses/aether"
+        $S find "$P/share/icons/hicolor" -name 'aether*' -delete 2>/dev/null
+        echo "Aether removed (settings kept in ~/.config/aether)."; exit 0 ;;
+      --help|-h)        sed -n '3,7p' "$0" | sed 's/^# *//'; exit 0 ;;
+    esac
+    exec "$PY" -c "import sys; sys.path.insert(0, '$d'); from aether.app import main; sys.exit(main(['aether'] + sys.argv[1:]))" "$@"
+  fi
+done
+echo "aether: cannot find its files" >&2; exit 1

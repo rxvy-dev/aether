@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<style-scheme id="aether-ember" name="Aether Ember" version="1.0">
+  <author>Aether</author>
+  <description>Aether Ember</description>
+  <style name="text" foreground="#e7e0d8" background="#1c1917"/>
+  <style name="selection" background="#4a3b2f"/>
+  <style name="cursor" foreground="#ffb454"/>
+  <style name="secondary-cursor" foreground="#7d7268"/>
+  <style name="current-line" background="#26211e"/>
+  <style name="line-numbers" foreground="#7d7268" background="#1c1917"/>
+  <style name="current-line-number" foreground="#e7e0d8" background="#26211e" bold="true"/>
+  <style name="bracket-match" foreground="#ffb454" background="#4a3b2f" bold="true"/>
+  <style name="bracket-mismatch" foreground="#ff5c57" underline="error"/>
+  <style name="right-margin" foreground="#7d7268" background="#26211e"/>
+  <style name="draw-spaces" foreground="#4a3b2f"/>
+  <style name="search-match" background="#4a3b2f"/>
+  <style name="map-overlay" background="#4a3b2f"/>
+  <style name="def:comment" foreground="#7d7268" italic="true"/>
+  <style name="def:shebang" foreground="#7d7268" bold="true"/>
+  <style name="def:doc-comment-element" foreground="#7d7268" italic="true" bold="true"/>
+  <style name="def:string" foreground="#a9d17b"/>
+  <style name="def:special-char" foreground="#5ad4c4"/>
+  <style name="def:special-constant" foreground="#f4a261"/>
+  <style name="def:character" foreground="#a9d17b"/>
+  <style name="def:keyword" foreground="#ff7b54"/>
+  <style name="def:statement" foreground="#ff7b54"/>
+  <style name="def:builtin" foreground="#ffb454"/>
+  <style name="def:type" foreground="#ffc857"/>
+  <style name="def:function" foreground="#ffb454"/>
+  <style name="def:identifier" foreground="#e7e0d8"/>
+  <style name="def:variable" foreground="#e7e0d8"/>
+  <style name="def:operator" foreground="#d9c8b6"/>
+  <style name="def:constant" foreground="#f4a261"/>
+  <style name="def:boolean" foreground="#f4a261"/>
+  <style name="def:number" foreground="#f4a261"/>
+  <style name="def:decimal" foreground="#f4a261"/>
+  <style name="def:base-n-integer" foreground="#f4a261"/>
+  <style name="def:floating-point" foreground="#f4a261"/>
+  <style name="def:complex" foreground="#f4a261"/>
+  <style name="def:preprocessor" foreground="#e76f51"/>
+  <style name="def:note" foreground="#ffc857" bold="true"/>
+  <style name="def:warning" foreground="#ffc857" underline="error"/>
+  <style name="def:error" foreground="#ff5c57" underline="error"/>
+  <style name="def:underlined" underline="single"/>
+  <style name="def:link-symbol" foreground="#ffb454" underline="single"/>
+  <style name="def:link-destination" foreground="#ffb454" underline="single"/>
+  <style name="def:heading" foreground="#ff7b54" bold="true"/>
+  <style name="def:emphasis" italic="true"/>
+  <style name="def:strong-emphasis" bold="true"/>
+  <style name="def:inline-code" foreground="#a9d17b"/>
+  <style name="def:net-address" foreground="#ffb454" underline="single"/>
+  <style name="def:reserved" foreground="#ff7b54"/>
+  <style name="diff:added-line" foreground="#6bd36b"/>
+  <style name="diff:removed-line" foreground="#ff5c57"/>
+  <style name="diff:changed-line" foreground="#ffc857"/>
+  <style name="diff:special-case" foreground="#e76f51"/>
+  <style name="diff:location" foreground="#ffb454"/>
+  <style name="diff:diff-file" foreground="#ffc857"/>
+</style-scheme>

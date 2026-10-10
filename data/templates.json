@@ -1,0 +1,169 @@
+{
+ "c": {
+  "main": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n#include <stdbool.h>\n\nint main(int argc, char *argv[]) {\n\t${0:printf(\"Hello, world!\\\\n\");}\n\treturn 0;\n}\n",
+  "extras": {
+   "for loop": [
+    "for",
+    "for (size_t ${1:i} = 0; ${1:i} < ${2:n}; ++${1:i}) {\n\t$0\n}"
+   ],
+   "struct": [
+    "struct",
+    "typedef struct {\n\t$0\n} ${1:Name};"
+   ],
+   "include guard": [
+    "guard",
+    "#ifndef ${TM_FILENAME_BASE/(.*)/${1:/upcase}/}_H\n#define ${TM_FILENAME_BASE/(.*)/${1:/upcase}/}_H\n\n$0\n\n#endif"
+   ],
+   "malloc": [
+    "malloc",
+    "${1:type} *${2:p} = malloc(${3:n} * sizeof(*${2:p}));\nif (!${2:p}) { perror(\"malloc\"); exit(EXIT_FAILURE); }"
+   ]
+  }
+ },
+ "cpp": {
+  "main": "#include <iostream>\n#include <string>\n#include <vector>\n#include <algorithm>\n#include <memory>\n\nint main(int argc, char *argv[]) {\n\t${0:std::cout << \"Hello, world!\\\\n\";}\n\treturn 0;\n}\n",
+  "extras": {
+   "class": [
+    "class",
+    "class ${1:Name} {\npublic:\n\t${1:Name}() = default;\n\t$0\n};"
+   ],
+   "for range": [
+    "forr",
+    "for (const auto &${1:x} : ${2:container}) {\n\t$0\n}"
+   ]
+  }
+ },
+ "python": {
+  "main": "#!/usr/bin/env python3\n\"\"\"${1:Description}\"\"\"\n\nimport sys\n\n\ndef main() -> int:\n\t${0:print(\"Hello, world!\")}\n\treturn 0\n\n\nif __name__ == \"__main__\":\n\tsys.exit(main())\n",
+  "extras": {
+   "class": [
+    "class",
+    "class ${1:Name}:\n\tdef __init__(self${2}):\n\t\t$0"
+   ]
+  }
+ },
+ "javascript": {
+  "main": "\"use strict\";\n\nfunction main() {\n\t${0:console.log(\"Hello, world!\");}\n}\n\nmain();\n",
+  "extras": {}
+ },
+ "typescript": {
+  "main": "function main(): void {\n\t${0:console.log(\"Hello, world!\");}\n}\n\nmain();\n",
+  "extras": {}
+ },
+ "javascriptreact": {
+  "main": "import React from \"react\";\n\nexport default function ${1:App}() {\n\treturn (\n\t\t<div>${0:Hello, world!}</div>\n\t);\n}\n",
+  "extras": {}
+ },
+ "typescriptreact": {
+  "main": "import React from \"react\";\n\nexport default function ${1:App}(): JSX.Element {\n\treturn (\n\t\t<div>${0:Hello, world!}</div>\n\t);\n}\n",
+  "extras": {}
+ },
+ "rust": {
+  "main": "fn main() {\n\t${0:println!(\"Hello, world!\");}\n}\n",
+  "extras": {}
+ },
+ "go": {
+  "main": "package main\n\nimport (\n\t\"fmt\"\n)\n\nfunc main() {\n\t${0:fmt.Println(\"Hello, world!\")}\n}\n",
+  "extras": {}
+ },
+ "java": {
+  "main": "public class ${1:${TM_FILENAME_BASE:Main}} {\n\tpublic static void main(String[] args) {\n\t\t${0:System.out.println(\"Hello, world!\");}\n\t}\n}\n",
+  "extras": {}
+ },
+ "csharp": {
+  "main": "using System;\n\nclass Program\n{\n\tstatic void Main(string[] args)\n\t{\n\t\t${0:Console.WriteLine(\"Hello, world!\");}\n\t}\n}\n",
+  "extras": {}
+ },
+ "kotlin": {
+  "main": "fun main() {\n\t${0:println(\"Hello, world!\")}\n}\n",
+  "extras": {}
+ },
+ "swift": {
+  "main": "import Foundation\n\n${0:print(\"Hello, world!\")}\n",
+  "extras": {}
+ },
+ "dart": {
+  "main": "void main() {\n\t${0:print('Hello, world!');}\n}\n",
+  "extras": {}
+ },
+ "scala": {
+  "main": "object ${1:Main} {\n\tdef main(args: Array[String]): Unit = {\n\t\t${0:println(\"Hello, world!\")}\n\t}\n}\n",
+  "extras": {}
+ },
+ "shellscript": {
+  "main": "#!/usr/bin/env bash\nset -euo pipefail\n\nmain() {\n\t${0:echo \"Hello, world!\"}\n}\n\nmain \"$@\"\n",
+  "extras": {}
+ },
+ "lua": {
+  "main": "local function main()\n\t${0:print(\"Hello, world!\")}\nend\n\nmain()\n",
+  "extras": {}
+ },
+ "perl": {
+  "main": "#!/usr/bin/env perl\nuse strict;\nuse warnings;\n\n${0:print \"Hello, world!\\\\n\";}\n",
+  "extras": {}
+ },
+ "ruby": {
+  "main": "#!/usr/bin/env ruby\n\ndef main\n\t${0:puts \"Hello, world!\"}\nend\n\nmain if __FILE__ == \\$PROGRAM_NAME\n",
+  "extras": {}
+ },
+ "php": {
+  "main": "<?php\ndeclare(strict_types=1);\n\n${0:echo \"Hello, world!\\\\n\";}\n",
+  "extras": {}
+ },
+ "haskell": {
+  "main": "module Main where\n\nmain :: IO ()\nmain = ${0:putStrLn \"Hello, world!\"}\n",
+  "extras": {}
+ },
+ "zig": {
+  "main": "const std = @import(\"std\");\n\npub fn main() !void {\n\t${0:std.debug.print(\"Hello, world!\\\\n\", .{});}\n}\n",
+  "extras": {}
+ },
+ "elixir": {
+  "main": "defmodule ${1:Main} do\n\tdef main do\n\t\t${0:IO.puts(\"Hello, world!\")}\n\tend\nend\n\n${1:Main}.main()\n",
+  "extras": {}
+ },
+ "r": {
+  "main": "main <- function() {\n\t${0:cat(\"Hello, world!\\\\n\")}\n}\n\nmain()\n",
+  "extras": {}
+ },
+ "julia": {
+  "main": "function main()\n\t${0:println(\"Hello, world!\")}\nend\n\nmain()\n",
+  "extras": {}
+ },
+ "html": {
+  "main": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n\t<meta charset=\"UTF-8\">\n\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\t<title>${1:Document}</title>\n</head>\n<body>\n\t$0\n</body>\n</html>\n",
+  "extras": {}
+ },
+ "css": {
+  "main": "* {\n\tbox-sizing: border-box;\n}\n\nbody {\n\t$0\n}\n",
+  "extras": {}
+ },
+ "sql": {
+  "main": "SELECT ${1:*}\nFROM ${2:table}\nWHERE ${0:1 = 1};\n",
+  "extras": {}
+ },
+ "makefile": {
+  "main": "CC      ?= cc\nCFLAGS  ?= -Wall -Wextra -O2\nTARGET  := ${1:app}\nSRC     := $(wildcard *.c)\n\nall: $(TARGET)\n\n$(TARGET): $(SRC)\n\t$(CC) $(CFLAGS) -o $@ $^\n\nclean:\n\trm -f $(TARGET)\n\n.PHONY: all clean\n",
+  "extras": {}
+ },
+ "dockerfile": {
+  "main": "FROM ${1:debian:stable-slim}\n\nWORKDIR /app\nCOPY . .\n\nCMD [\"${0:./app}\"]\n",
+  "extras": {}
+ },
+ "toml": {
+  "main": "[package]\nname = \"${1:name}\"\nversion = \"0.1.0\"\n",
+  "extras": {}
+ },
+ "yaml": {
+  "main": "name: ${1:name}\n${0:key: value}\n",
+  "extras": {}
+ },
+ "markdown": {
+  "main": "# ${1:Title}\n\n${0:Description}\n",
+  "extras": {}
+ },
+ "json": {
+  "main": "{\n\t\"${1:key}\": \"${0:value}\"\n}\n",
+  "extras": {}
+ }
+}

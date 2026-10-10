@@ -1,0 +1,22 @@
+# Template file for 'aether'  (void-packages: copy this folder to srcpkgs/aether, then ./xbps-src pkg aether)
+pkgname=aether
+version=3.0.0
+revision=1
+build_style=gnu-makefile
+make_install_args="PREFIX=/usr"
+depends="python3 python3-gobject python3-cairo gtk4 gtksourceview5"
+short_desc="Fast IDE for Linux with projects, gdb debugger, LSP and git"
+maintainer="rxvy <rxvy@users.noreply.github.com>"
+license="MIT"
+homepage="https://github.com/rxvy-dev/aether"
+distfiles="https://github.com/rxvy-dev/aether/archive/refs/tags/v${version}.tar.gz"
+checksum=SKIP_REPLACE_WITH_SHA256
+archs=noarch
+
+do_build() {
+	:
+}
+
+post_install() {
+	vlicense LICENSE
+}

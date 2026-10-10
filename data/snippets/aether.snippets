@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<snippets _group="Aether">
+  <snippet _name="c: starter (main)" trigger="main" _description="c: starter (main)">
+    <text languages="c;chdr;"><![CDATA[#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
+
+int main(int argc, char *argv[]) {
+	${1:printf("Hello, world!\\n");}
+	return 0;
+}]]></text>
+  </snippet>
+  <snippet _name="c: for loop" trigger="for" _description="c: for loop">
+    <text languages="c;chdr;"><![CDATA[for (size_t ${1:i} = 0; ${1:i} < ${2:n}; ++${1:i}) {
+	$0
+}]]></text>
+  </snippet>
+  <snippet _name="c: struct" trigger="struct" _description="c: struct">
+    <text languages="c;chdr;"><![CDATA[typedef struct {
+	$0
+} ${1:Name};]]></text>
+  </snippet>
+  <snippet _name="c: include guard" trigger="guard" _description="c: include guard">
+    <text languages="c;chdr;"><![CDATA[#ifndef ${TM_FILENAME_BASE}_H
+#define ${TM_FILENAME_BASE}_H
+
+$0
+
+#endif]]></text>
+  </snippet>
+  <snippet _name="c: malloc" trigger="malloc" _description="c: malloc">
+    <text languages="c;chdr;"><![CDATA[${1:type} *${2:p} = malloc(${3:n} * sizeof(*${2:p}));
+if (!${2:p}) { perror("malloc"); exit(EXIT_FAILURE); }]]></text>
+  </snippet>
+  <snippet _name="cpp: starter (main)" trigger="main" _description="cpp: starter (main)">
+    <text languages="cpp;cpphdr;"><![CDATA[#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <memory>
+
+int main(int argc, char *argv[]) {
+	${1:std::cout << "Hello, world!\\n";}
+	return 0;
+}]]></text>
+  </snippet>
+  <snippet _name="cpp: class" trigger="class" _description="cpp: class">
+    <text languages="cpp;cpphdr;"><![CDATA[class ${1:Name} {
+public:
+	${1:Name}() = default;
+	$0
+};]]></text>
+  </snippet>
+  <snippet _name="cpp: for range" trigger="forr" _description="cpp: for range">
+    <text languages="cpp;cpphdr;"><![CDATA[for (const auto &${1:x} : ${2:container}) {
+	$0
+}]]></text>
+  </snippet>
+  <snippet _name="python: starter (main)" trigger="main" _description="python: starter (main)">
+    <text languages="python;python3;"><![CDATA[#!/usr/bin/env python3
+"""${1:Description}"""
+
+import sys
+
+
+def main() -> int:
+	${2:print("Hello, world!")}
+	return 0
+
+
+if __name__ == "__main__":
+	sys.exit(main())]]></text>
+  </snippet>
+  <snippet _name="python: class" trigger="class" _description="python: class">
+    <text languages="python;python3;"><![CDATA[class ${1:Name}:
+	def __init__(self${2}):
+		$0]]></text>
+  </snippet>
+  <snippet _name="javascript: starter (main)" trigger="main" _description="javascript: starter (main)">
+    <text languages="js;"><![CDATA["use strict";
+
+function main() {
+	${1:console.log("Hello, world!");}
+}
+
+main();]]></text>
+  </snippet>
+  <snippet _name="typescript: starter (main)" trigger="main" _description="typescript: starter (main)">
+    <text languages="typescript;"><![CDATA[function main(): void {
+	${1:console.log("Hello, world!");}
+}
+
+main();]]></text>
+  </snippet>
+  <snippet _name="javascriptreact: starter (main)" trigger="main" _description="javascriptreact: starter (main)">
+    <text languages="jsx;"><![CDATA[import React from "react";
+
+export default function ${1:App}() {
+	return (
+		<div>${2:Hello, world!}</div>
+	);
+}]]></text>
+  </snippet>
+  <snippet _name="typescriptreact: starter (main)" trigger="main" _description="typescriptreact: starter (main)">
+    <text languages="typescript-jsx;"><![CDATA[import React from "react";
+
+export default function ${1:App}(): JSX.Element {
+	return (
+		<div>${2:Hello, world!}</div>
+	);
+}]]></text>
+  </snippet>
+  <snippet _name="rust: starter (main)" trigger="main" _description="rust: starter (main)">
+    <text languages="rust;"><![CDATA[fn main() {
+	${1:println!("Hello, world!");}
+}]]></text>
+  </snippet>
+  <snippet _name="go: starter (main)" trigger="main" _description="go: starter (main)">
+    <text languages="go;"><![CDATA[package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	${1:fmt.Println("Hello, world!")}
+}]]></text>
+  </snippet>
+  <snippet _name="java: starter (main)" trigger="main" _description="java: starter (main)">
+    <text languages="java;"><![CDATA[public class ${1:$TM_FILENAME_BASE} {
+	public static void main(String[] args) {
+		${2:System.out.println("Hello, world!");}
+	}
+}]]></text>
+  </snippet>
+  <snippet _name="csharp: starter (main)" trigger="main" _description="csharp: starter (main)">
+    <text languages="c-sharp;"><![CDATA[using System;
+
+class Program
+{
+	static void Main(string[] args)
+	{
+		${1:Console.WriteLine("Hello, world!");}
+	}
+}]]></text>
+  </snippet>
+  <snippet _name="kotlin: starter (main)" trigger="main" _description="kotlin: starter (main)">
+    <text languages="kotlin;"><![CDATA[fun main() {
+	${1:println("Hello, world!")}
+}]]></text>
+  </snippet>
+  <snippet _name="swift: starter (main)" trigger="main" _description="swift: starter (main)">
+    <text languages="swift;"><![CDATA[import Foundation
+
+${1:print("Hello, world!")}]]></text>
+  </snippet>
+  <snippet _name="dart: starter (main)" trigger="main" _description="dart: starter (main)">
+    <text languages="dart;"><![CDATA[void main() {
+	${1:print('Hello, world!');}
+}]]></text>
+  </snippet>
+  <snippet _name="scala: starter (main)" trigger="main" _description="scala: starter (main)">
+    <text languages="scala;"><![CDATA[object ${1:Main} {
+	def main(args: Array[String]): Unit = {
+		${2:println("Hello, world!")}
+	}
+}]]></text>
+  </snippet>
+  <snippet _name="shellscript: starter (main)" trigger="main" _description="shellscript: starter (main)">
+    <text languages="sh;"><![CDATA[#!/usr/bin/env bash
+set -euo pipefail
+
+main() {
+	${1:echo "Hello, world!"}
+}
+
+main "$@"]]></text>
+  </snippet>
+  <snippet _name="lua: starter (main)" trigger="main" _description="lua: starter (main)">
+    <text languages="lua;"><![CDATA[local function main()
+	${1:print("Hello, world!")}
+end
+
+main()]]></text>
+  </snippet>
+  <snippet _name="perl: starter (main)" trigger="main" _description="perl: starter (main)">
+    <text languages="perl;"><![CDATA[#!/usr/bin/env perl
+use strict;
+use warnings;
+
+${1:print "Hello, world!\\n";}]]></text>
+  </snippet>
+  <snippet _name="ruby: starter (main)" trigger="main" _description="ruby: starter (main)">
+    <text languages="ruby;"><![CDATA[#!/usr/bin/env ruby
+
+def main
+	${1:puts "Hello, world!"}
+end
+
+main if __FILE__ == \$PROGRAM_NAME]]></text>
+  </snippet>
+  <snippet _name="php: starter (main)" trigger="main" _description="php: starter (main)">
+    <text languages="php;"><![CDATA[<?php
+declare(strict_types=1);
+
+${1:echo "Hello, world!\\n";}]]></text>
+  </snippet>
+  <snippet _name="haskell: starter (main)" trigger="main" _description="haskell: starter (main)">
+    <text languages="haskell;"><![CDATA[module Main where
+
+main :: IO ()
+main = ${1:putStrLn "Hello, world!"}]]></text>
+  </snippet>
+  <snippet _name="elixir: starter (main)" trigger="main" _description="elixir: starter (main)">
+    <text languages="elixir;"><![CDATA[defmodule ${1:Main} do
+	def main do
+		${2:IO.puts("Hello, world!")}
+	end
+end
+
+${1:Main}.main()]]></text>
+  </snippet>
+  <snippet _name="r: starter (main)" trigger="main" _description="r: starter (main)">
+    <text languages="r;"><![CDATA[main <- function() {
+	${1:cat("Hello, world!\\n")}
+}
+
+main()]]></text>
+  </snippet>
+  <snippet _name="julia: starter (main)" trigger="main" _description="julia: starter (main)">
+    <text languages="julia;"><![CDATA[function main()
+	${1:println("Hello, world!")}
+end
+
+main()]]></text>
+  </snippet>
+  <snippet _name="html: starter (main)" trigger="main" _description="html: starter (main)">
+    <text languages="html;"><![CDATA[<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>${1:Document}</title>
+</head>
+<body>
+	$0
+</body>
+</html>]]></text>
+  </snippet>
+  <snippet _name="css: starter (main)" trigger="main" _description="css: starter (main)">
+    <text languages="css;"><![CDATA[* {
+	box-sizing: border-box;
+}
+
+body {
+	$0
+}]]></text>
+  </snippet>
+  <snippet _name="sql: starter (main)" trigger="main" _description="sql: starter (main)">
+    <text languages="sql;"><![CDATA[SELECT ${1:*}
+FROM ${2:table}
+WHERE ${3:1 = 1};]]></text>
+  </snippet>
+  <snippet _name="makefile: starter (main)" trigger="main" _description="makefile: starter (main)">
+    <text languages="makefile;"><![CDATA[CC      ?= cc
+CFLAGS  ?= -Wall -Wextra -O2
+TARGET  := ${1:app}
+SRC     := $(wildcard *.c)
+
+all: $(TARGET)
+
+$(TARGET): $(SRC)
+	$(CC) $(CFLAGS) -o $@ $^
+
+clean:
+	rm -f $(TARGET)
+
+.PHONY: all clean]]></text>
+  </snippet>
+  <snippet _name="dockerfile: starter (main)" trigger="main" _description="dockerfile: starter (main)">
+    <text languages="docker;"><![CDATA[FROM ${1:debian:stable-slim}
+
+WORKDIR /app
+COPY . .
+
+CMD ["${2:./app}"]]]></text>
+  </snippet>
+  <snippet _name="toml: starter (main)" trigger="main" _description="toml: starter (main)">
+    <text languages="toml;"><![CDATA[[package]
+name = "${1:name}"
+version = "0.1.0"]]></text>
+  </snippet>
+  <snippet _name="yaml: starter (main)" trigger="main" _description="yaml: starter (main)">
+    <text languages="yaml;"><![CDATA[name: ${1:name}
+${2:key: value}]]></text>
+  </snippet>
+  <snippet _name="markdown: starter (main)" trigger="main" _description="markdown: starter (main)">
+    <text languages="markdown;"><![CDATA[# ${1:Title}
+
+${2:Description}]]></text>
+  </snippet>
+  <snippet _name="json: starter (main)" trigger="main" _description="json: starter (main)">
+    <text languages="json;"><![CDATA[{
+	"${1:key}": "${2:value}"
+}]]></text>
+  </snippet>
+  <snippet _name="TODO comment" trigger="todo"><text><![CDATA[TODO: ${1:what}]]></text></snippet>
+</snippets>

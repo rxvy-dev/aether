@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+dist/
+build/
+*.aether-tmp
+packaging/*.tar.gz
+packaging/pkg/
+packaging/src/
+*.pkg.tar.zst

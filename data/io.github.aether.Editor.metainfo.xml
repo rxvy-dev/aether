@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.aether.Editor</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Aether</name>
+  <summary>Fast IDE for Linux</summary>
+  <description>
+    <p>Aether is a fast IDE for Linux built on GTK 4. It detects your project's build system (Make, CMake, Meson, Cargo, Go, Zig, npm), builds with clickable errors, and debugs C, C++, Rust and Go with gdb: breakpoints, stepping, variables, watches and the call stack.</p>
+    <p>It also has language servers, git, an outline, code folding, multiple cursors, 39 themes, a theme studio and a built-in terminal.</p>
+  </description>
+  <launchable type="desktop-id">io.github.aether.Editor.desktop</launchable>
+  <categories><category>Development</category><category>TextEditor</category></categories>
+  <content_rating type="oars-1.1"/>
+  <releases><release version="3.0.0" date="2026-10-10"/><release version="1.0.0" date="2026-10-03"/></releases>
+</component>

@@ -1,0 +1,18 @@
+# Contributor: rxvy
+# Maintainer: rxvy
+pkgname=aether
+pkgver=3.0.0
+pkgrel=0
+pkgdesc="Fast IDE for Linux with projects, gdb debugger, LSP and git"
+url="https://github.com/rxvy-dev/aether"
+arch="noarch"
+license="MIT"
+depends="python3 py3-gobject3 py3-cairo gtk4.0 gtksourceview5"
+makedepends="make"
+subpackages=""
+source="$pkgname-$pkgver.tar.gz::https://github.com/rxvy-dev/aether/archive/refs/tags/v$pkgver.tar.gz"
+options="!check"
+
+package() {
+	make DESTDIR="$pkgdir" PREFIX=/usr install
+}
