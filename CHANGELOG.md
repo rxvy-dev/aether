@@ -1,5 +1,19 @@
 # Changelog
 
+## 3.1.0
+**Boards: Arduino, ESP32 and friends.**
+
+- **Board projects are detected automatically:** Arduino sketches (`.ino`, `sketch.yaml`), PlatformIO (`platformio.ini`), ESP-IDF and MicroPython.
+- **Board picker and port picker** in the status bar and the new *Device* sidebar page. The choice is saved in `sketch.yaml` or `platformio.ini`. 23 boards built in (Uno, Nano, Mega, Leonardo, Micro, Uno R4, ESP32 variants, XIAO, ESP8266, Pico, Pico W, Pico 2); custom FQBNs work too.
+- **Build and Upload** (`Ctrl+Shift+B`, `Ctrl+Alt+U`) through arduino-cli, PlatformIO, `idf.py` or mpremote, with clickable compiler errors. F5 on a sketch uploads and opens the monitor. Missing Arduino cores are installed automatically.
+- **Serial monitor** (`Ctrl+Alt+M`): no extra dependencies, any baud rate, ANSI colours, timestamps, autoscroll, send with line-ending choice and history, reset button, auto-reconnect for USB boards that re-enumerate, and it lets go of the port during uploads. Baud is guessed from your project.
+- **Libraries and board support:** install or search Arduino libraries and cores from the Device page.
+- **New project templates:** Arduino, ESP32 (Arduino and PlatformIO), Uno (PlatformIO), Pico (PlatformIO), ESP-IDF and MicroPython.
+- Arduino and ESP32 code snippets (`inosetup`, `inowifi`, `inoserver`, `esplog`, …).
+- `aether --doctor` checks the board tools and serial-port permissions.
+- ANSI colour codes are stripped from build output.
+- Not included yet: language-server support for `.ino` and on-chip debugging.
+
 ## 3.0.0
 **Aether becomes an IDE.**
 

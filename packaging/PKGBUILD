@@ -1,7 +1,7 @@
 # Maintainer: rxvy <https://github.com/rxvy-dev>
-# Build:  make dist && cp dist/aether-3.0.0.tar.gz packaging/ && cd packaging && makepkg -si
+# Build:  make dist && cp dist/aether-3.1.0.tar.gz packaging/ && cd packaging && makepkg -si
 pkgname=aether
-pkgver=3.0.0
+pkgver=3.1.0
 pkgrel=1
 pkgdesc="Fast IDE for Linux: projects & builds, gdb debugger, LSP, git, folding, multiple cursors"
 arch=('any')

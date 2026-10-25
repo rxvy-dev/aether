@@ -659,10 +659,13 @@ class Sidebar(Gtk.Box):
         self.stack.set_vexpand(True)
         self.files, self.search, self.git = FilesPage(win), SearchPage(win), GitPage(win)
         self.outline, self.debug = OutlinePage(win), DebugPage(win)
+        from .embeddedui import DevicePage
+        self.device = DevicePage(win)
         first = None
         self.buttons = {}
         for name, label, page in (("files", "Files", self.files), ("search", "Search", self.search), ("git", "Git", self.git),
-                                  ("outline", "Outline", self.outline), ("debug", "Debug", self.debug)):
+                                  ("outline", "Outline", self.outline), ("debug", "Debug", self.debug),
+                                  ("device", "Device", self.device)):
             b = Gtk.ToggleButton(label=label)
             if first:
                 b.set_group(first)

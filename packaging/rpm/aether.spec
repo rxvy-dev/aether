@@ -1,7 +1,7 @@
 # Fedora / RHEL 9+ (EPEL) / openSUSE:
-#   make dist && rpmbuild -ta dist/aether-3.0.0.tar.gz      (or: make rpm)
+#   make dist && rpmbuild -ta dist/aether-3.1.0.tar.gz      (or: make rpm)
 Name:           aether
-Version:        3.0.0
+Version:        3.1.0
 Release:        1%{?dist}
 Summary:        Fast IDE for Linux
 License:        MIT

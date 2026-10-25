@@ -1,6 +1,6 @@
 PREFIX ?= /usr/local
 DESTDIR ?=
-VERSION := 3.0.0
+VERSION := 3.1.0
 APP := io.github.aether.Editor
 
 PYTHON ?= $(shell for p in /usr/bin/python3 python3 /usr/bin/python3.1[0-9]; do $$p -c 'import gi' 2>/dev/null && { echo $$p; break; }; done)

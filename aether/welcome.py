@@ -5,7 +5,7 @@ import gi
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, Gio, GLib, Pango
 
-from . import NAME, VERSION, project
+from . import NAME, VERSION, project, embedded
 
 SHORTCUTS = [("Command palette", "Ctrl+Shift+P"), ("Quick open file", "Ctrl+P"), ("Build project", "Ctrl+Shift+B"),
              ("Run", "F5"), ("Start debugging", "F6"), ("Toggle breakpoint", "F9"), ("Add next occurrence", "Ctrl+D"),
@@ -291,7 +291,12 @@ class NewProjectDialog(_Dialog):
             self.list.append(row)
         self.list.select_row(self.list.get_row_at_index(0))
         self.list.connect("row-activated", lambda *_: self.create())
-        self.field("Template", self.list)
+        lsw = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER)
+        lsw.set_min_content_height(250)
+        lsw.set_max_content_height(330)
+        lsw.set_propagate_natural_height(True)
+        lsw.set_child(self.list)
+        self.field("Template", lsw)
         gr = Gtk.Box(spacing=10)
         self.git = Gtk.Switch(active=True, valign=Gtk.Align.CENTER)
         gr.append(self.git)
@@ -313,7 +318,8 @@ class NewProjectDialog(_Dialog):
         self.close()
         self.win.open_folder(root)
         self.win.open_path(main)
-        self.win.flash(f"Created {os.path.basename(root)} — Ctrl+Shift+B builds, F5 runs, F6 debugs", 8000)
+        hint = embedded.HINTS.get(row._key) or "Ctrl+Shift+B builds, F5 runs, F6 debugs"
+        self.win.flash(f"Created {os.path.basename(root)} — {hint}", 9000)
 
 
 class CloneDialog(_Dialog):

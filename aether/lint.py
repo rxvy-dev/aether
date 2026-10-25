@@ -47,6 +47,8 @@ def _has_up(path, name):
 def command_for(key, path):
     """Return (argv, default_severity) or None."""
     d = os.path.dirname(path) if path else os.getcwd()
+    if path and path.lower().endswith((".ino", ".pde")):
+        return None                       # Arduino.h is injected at build time — a host compiler would flag every pinMode()
     if key in ("c", "cpp"):
         cc = shutil.which("cc") or shutil.which("gcc") or shutil.which("clang") if key == "c" else \
              shutil.which("c++") or shutil.which("g++") or shutil.which("clang++")

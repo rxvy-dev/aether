@@ -1,14 +1,20 @@
 """Projects: detect the build system, run build/run/test/clean tasks, create new projects.
 
-Detected (first match wins): Cargo, CMake, Meson, Makefile, Go modules, Zig, npm, Python.
+Detected (first match wins): embedded (PlatformIO, ESP-IDF, Arduino sketch, MicroPython — see embedded.py),
+Cargo, CMake, Meson, Makefile, Go modules, Zig, npm, Python.
 Every command can be overridden per project in  <project>/.aether/project.json :
 
     { "build": "make -j8", "run": "./bin/app --verbose", "test": "make check",
       "clean": "make clean", "debug_program": "bin/app", "debug_args": "" }
+
+Embedded projects also understand  "upload", "board", "fqbn", "chip", "baud", "pio_env" and "idf_export".
 """
 import json, os, re, shlex, shutil, glob
 
+from . import embedded
+
 CONFIG = os.path.join(".aether", "project.json")
+TASK_KEYS = ("build", "run", "test", "clean", "configure", "upload")
 
 # file:line[:col]: (fatal )?error|warning|note: message     (gcc, clang, go, zig, tsc-ish)
 DIAG_RE = re.compile(r"^(?P<file>[^\s:][^:]*?):(?P<line>\d+)(?::(?P<col>\d+))?:\s*(?:(?P<sev>fatal error|error|warning|note)\b:?\s*)?(?P<msg>.*)$")
@@ -19,37 +25,50 @@ RUST_HEAD = re.compile(r"^(?P<sev>error|warning)(?:\[\w+\])?:\s*(?P<msg>.*)$")
 PY_RE = re.compile(r'^\s*File "(?P<file>[^"]+)", line (?P<line>\d+)')
 
 
+def read_cfg(root):
+    try:
+        with open(os.path.join(root, CONFIG)) as f:
+            d = json.load(f)
+            return d if isinstance(d, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
 class Project:
-    def __init__(self, root, config="Debug"):
+    def __init__(self, root, config="Debug", port=""):
         self.root = os.path.abspath(root)
         self.config = config
-        self.kind, self.tasks = detect(self.root, config)
+        self.port = port            # serial port for upload tasks (machine specific, so not saved in the project)
         self.cfg = self._load()
-        for k in ("build", "run", "test", "clean", "configure"):
+        self.refresh()
+
+    def refresh(self):
+        """Re-detect the build system and tasks (after the board / port / config files changed)."""
+        self.kind, self.tasks = detect(self.root, self.config, self.cfg, self.port)
+        for k in TASK_KEYS:
             if self.cfg.get(k):
                 self.tasks[k] = self.cfg[k]
+
+    @property
+    def embedded(self):
+        return self.kind in embedded.KINDS
 
     @property
     def name(self):
         return os.path.basename(self.root.rstrip("/"))
 
     def _load(self):
-        try:
-            with open(os.path.join(self.root, CONFIG)) as f:
-                d = json.load(f)
-                return d if isinstance(d, dict) else {}
-        except (OSError, ValueError):
-            return {}
+        return read_cfg(self.root)
 
     def save_cfg(self, **kv):
         self.cfg.update(kv)
+        for k in [k for k, v in self.cfg.items() if v is None]:
+            del self.cfg[k]
         p = os.path.join(self.root, CONFIG)
         os.makedirs(os.path.dirname(p), exist_ok=True)
         with open(p, "w") as f:
             json.dump(self.cfg, f, indent=2)
-        for k in ("build", "run", "test", "clean", "configure"):
-            if self.cfg.get(k):
-                self.tasks[k] = self.cfg[k]
+        self.refresh()
 
     def label(self):
         return self.kind or "folder"
@@ -96,8 +115,11 @@ def _npm_scripts(root):
         return {}
 
 
-def detect(root, config="Debug"):
+def detect(root, config="Debug", cfg=None, port=""):
     """-> (kind, {task: shell command}).  config: "Debug" or "Release"."""
+    kind, tasks = embedded.detect(root, read_cfg(root) if cfg is None else cfg, port)
+    if kind:
+        return kind, tasks
     rel = config == "Release"
     j = lambda *p: os.path.join(root, *p)
     ex = lambda *p: os.path.exists(j(*p))
@@ -322,6 +344,10 @@ def safe_name(name):
     return n or "project"
 
 
+TEMPLATES.update(embedded.TEMPLATES)
+GITIGNORE.update(embedded.GITIGNORE)
+
+
 def create(parent, name, key, git=True):
     """Create a project folder from a template. Returns (folder, file_to_open). Raises OSError."""
     name = safe_name(name)
@@ -331,7 +357,7 @@ def create(parent, name, key, git=True):
     _label, _desc, files, main = TEMPLATES[key]
     ident = name.replace("-", "_") if key in ("rust", "c", "c-meson", "cpp") else name
     for rel, content in files.items():
-        p = os.path.join(root, rel)
+        p = os.path.join(root, rel.replace("{name}", ident))
         os.makedirs(os.path.dirname(p), exist_ok=True)
         with open(p, "w") as f:
             f.write(content.replace("{name}", ident))
@@ -345,4 +371,4 @@ def create(parent, name, key, git=True):
         f.write(f"# {name}\n")
     if git and shutil.which("git"):
         os.system(f"git -C {shlex.quote(root)} init -q >/dev/null 2>&1")
-    return root, os.path.join(root, main)
+    return root, os.path.join(root, main.replace("{name}", ident))

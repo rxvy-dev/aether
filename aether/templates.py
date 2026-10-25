@@ -1,5 +1,5 @@
 import json, os, re
-from . import data_dir
+from . import data_dir, embedded
 
 with open(os.path.join(data_dir(), "templates.json")) as _f:
     T = json.load(_f)
@@ -11,7 +11,7 @@ EXT = {".c": "c", ".h": "c", ".cc": "cpp", ".cpp": "cpp", ".cxx": "cpp", ".hpp":
        ".lua": "lua", ".pl": "perl", ".rb": "ruby", ".php": "php", ".hs": "haskell", ".zig": "zig",
        ".ex": "elixir", ".exs": "elixir", ".r": "r", ".jl": "julia", ".html": "html", ".htm": "html",
        ".css": "css", ".sql": "sql", ".toml": "toml", ".yaml": "yaml", ".yml": "yaml", ".md": "markdown",
-       ".json": "json"}
+       ".json": "json", ".ino": "cpp", ".pde": "cpp"}
 NAMES = {"makefile": "makefile", "dockerfile": "dockerfile"}
 KEY_EXT = {"c": ".c", "cpp": ".cpp", "python": ".py", "javascript": ".js", "typescript": ".ts",
            "javascriptreact": ".jsx", "typescriptreact": ".tsx", "rust": ".rs", "go": ".go", "java": ".java",
@@ -43,6 +43,8 @@ def key_for_path(path):
 def header_starter(path):
     base = os.path.basename(path)
     ext = os.path.splitext(base)[1].lower()
+    if ext in (".ino", ".pde"):
+        return embedded.INO_STARTER
     guard = re.sub(r"\W", "_", os.path.splitext(base)[0]).upper() + "_" + ext[1:].upper()
     if ext == ".h":
         return f"#ifndef {guard}\n#define {guard}\n\n$0\n\n#endif /* {guard} */\n"

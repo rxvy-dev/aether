@@ -67,6 +67,24 @@ def check():
                       ("rust-analyzer", "Rust intelligence"), ("gopls", "Go intelligence"), ("cmake", "CMake projects"),
                       ("meson", "Meson projects"), ("clang-format", "format C/C++"), ("shellcheck", "shell diagnostics")):
         row(shutil.which(tool) is not None, False, tool, why)
+
+    lines.append("Optional (embedded boards: Arduino, ESP32, Pico)")
+    try:
+        from . import embedded
+        for label, found, why in (
+                ("arduino-cli", embedded.which("arduino-cli"), "Arduino / ESP32 sketches (.ino)"),
+                ("pio (PlatformIO)", embedded.pio_exe(), "PlatformIO projects (platformio.ini)"),
+                ("ESP-IDF (idf.py / export.sh)", embedded.which("idf.py") or embedded.idf_export(), "ESP-IDF projects"),
+                ("mpremote", embedded.which("mpremote"), "MicroPython boards")):
+            row(bool(found), False, label, why)
+        ports = embedded.list_ports()
+        if not ports:
+            row(False, False, "serial ports", "none found (plug a board in)")
+        for p in ports:
+            bad = embedded.port_problem(p.path)
+            row(not bad, False, f"{p.path}", bad or p.desc)
+    except Exception as e:  # never let the optional section break --doctor
+        row(False, False, "embedded board check", str(e))
     return problems, lines
 
 

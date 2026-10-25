@@ -63,6 +63,7 @@ DEFAULTS = {
     "activity_bar": True,            # VS Code-style icon bar on the left
     "build_config": "Debug",         # Debug | Release
     "panel_pos": 0,                  # editor/panel split (0 = default)
+    "serial": {"port": "", "baud": 115200},   # last used serial port / speed (embedded boards)
 }
 
 

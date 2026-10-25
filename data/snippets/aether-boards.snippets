@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<snippets _group="Aether Boards">
+  <snippet _name="Arduino: setup() and loop()" trigger="inosetup" _description="Arduino: setup() and loop()">
+    <text languages="cpp;"><![CDATA[void setup() {
+	Serial.begin(${1:115200});
+	$0
+}
+
+void loop() {
+	
+}]]></text>
+  </snippet>
+  <snippet _name="Arduino: Serial.begin + println" trigger="inoserial" _description="Arduino: Serial.begin + println">
+    <text languages="cpp;"><![CDATA[Serial.begin(${1:115200});
+Serial.println("${2:ready}");]]></text>
+  </snippet>
+  <snippet _name="Arduino: blink an LED" trigger="inoblink" _description="Arduino: blink an LED">
+    <text languages="cpp;"><![CDATA[pinMode(${1:LED_BUILTIN}, OUTPUT);
+digitalWrite(${1:LED_BUILTIN}, HIGH);
+delay(${2:500});
+digitalWrite(${1:LED_BUILTIN}, LOW);
+delay(${2:500});]]></text>
+  </snippet>
+  <snippet _name="Arduino: non-blocking timer with millis()" trigger="inomillis" _description="Arduino: non-blocking timer with millis()">
+    <text languages="cpp;"><![CDATA[static unsigned long ${1:last} = 0;
+if (millis() - ${1:last} >= ${2:1000}UL) {
+	${1:last} = millis();
+	$0
+}]]></text>
+  </snippet>
+  <snippet _name="Arduino: pin interrupt" trigger="inoisr" _description="Arduino: pin interrupt">
+    <text languages="cpp;"><![CDATA[#ifndef IRAM_ATTR
+#define IRAM_ATTR
+#endif
+
+volatile bool ${1:pressed} = false;
+
+void IRAM_ATTR ${2:onPress}() {
+	${1:pressed} = true;
+}
+
+// in setup():
+// pinMode(${3:2}, INPUT_PULLUP);
+// attachInterrupt(digitalPinToInterrupt(${3:2}), ${2:onPress}, FALLING);]]></text>
+  </snippet>
+  <snippet _name="ESP32 / ESP8266: connect to Wi-Fi" trigger="inowifi" _description="ESP32 / ESP8266: connect to Wi-Fi">
+    <text languages="cpp;"><![CDATA[#if defined(ESP32)
+#include <WiFi.h>
+#else
+#include <ESP8266WiFi.h>
+#endif
+
+const char *WIFI_SSID = "${1:ssid}";
+const char *WIFI_PASS = "${2:password}";
+
+void connectWifi() {
+	WiFi.mode(WIFI_STA);
+	WiFi.begin(WIFI_SSID, WIFI_PASS);
+	Serial.print("Connecting");
+	while (WiFi.status() != WL_CONNECTED) {
+		delay(300);
+		Serial.print('.');
+	}
+	Serial.print("\nIP: ");
+	Serial.println(WiFi.localIP());
+}]]></text>
+  </snippet>
+  <snippet _name="ESP32: tiny web server" trigger="inoserver" _description="ESP32: tiny web server">
+    <text languages="cpp;"><![CDATA[#include <WiFi.h>
+#include <WebServer.h>
+
+WebServer server(80);
+
+void handleRoot() {
+	server.send(200, "text/plain", "${1:Hello from the ESP32}");
+}
+
+// in setup(), after connecting to Wi-Fi:
+//   server.on("/", handleRoot);
+//   server.begin();
+// in loop():
+//   server.handleClient();]]></text>
+  </snippet>
+  <snippet _name="Arduino: I2C scanner" trigger="inoi2cscan" _description="Arduino: I2C scanner">
+    <text languages="cpp;"><![CDATA[#include <Wire.h>
+
+void scanI2C() {
+	for (uint8_t addr = 1; addr < 127; ++addr) {
+		Wire.beginTransmission(addr);
+		if (Wire.endTransmission() == 0) {
+			Serial.printf("found device at 0x%02X\n", addr);
+		}
+	}
+}]]></text>
+  </snippet>
+  <snippet _name="ESP32: deep sleep for N seconds" trigger="inodeepsleep" _description="ESP32: deep sleep for N seconds">
+    <text languages="cpp;"><![CDATA[esp_sleep_enable_timer_wakeup(${1:30} * 1000000ULL);
+Serial.flush();
+esp_deep_sleep_start();]]></text>
+  </snippet>
+  <snippet _name="Arduino: servo sweep" trigger="inoservo" _description="Arduino: servo sweep">
+    <text languages="cpp;"><![CDATA[#include <Servo.h>
+
+Servo ${1:servo};
+
+// in setup():  ${1:servo}.attach(${2:9});
+// in loop():
+for (int pos = 0; pos <= 180; pos += 2) {
+	${1:servo}.write(pos);
+	delay(15);
+}]]></text>
+  </snippet>
+  <snippet _name="ESP-IDF: logging" trigger="esplog" _description="ESP-IDF: logging">
+    <text languages="c;cpp;"><![CDATA[static const char *TAG = "${1:app}";
+
+ESP_LOGI(TAG, "${2:started}");
+ESP_LOGW(TAG, "${3:careful}: %d", ${4:value});
+ESP_LOGE(TAG, "${5:failed}: %s", esp_err_to_name(${6:err}));]]></text>
+  </snippet>
+  <snippet _name="FreeRTOS: create a task" trigger="freertostask" _description="FreeRTOS: create a task">
+    <text languages="c;cpp;"><![CDATA[static void ${1:worker}(void *arg) {
+	for (;;) {
+		$0
+		vTaskDelay(pdMS_TO_TICKS(${2:1000}));
+	}
+}
+
+// xTaskCreate(${1:worker}, "${1:worker}", 4096, NULL, 5, NULL);]]></text>
+  </snippet>
+</snippets>

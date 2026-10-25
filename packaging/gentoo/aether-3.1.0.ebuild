@@ -1,4 +1,4 @@
-# Local overlay ebuild: put in <overlay>/app-editors/aether/ then `ebuild aether-3.0.0.ebuild manifest`
+# Local overlay ebuild: put in <overlay>/app-editors/aether/ then `ebuild aether-3.1.0.ebuild manifest`
 EAPI=8
 PYTHON_COMPAT=( python3_{10..13} )
 inherit python-single-r1 xdg

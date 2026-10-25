@@ -12,7 +12,7 @@
 
 ![Aether debugging a C program](docs/screenshot-debug.png)
 
-Aether is written from scratch on GTK 4 and GtkSourceView 5, with no Electron and no VS Code code. It builds your project, takes you straight to the errors, and debugs C, C++, Rust and Go with gdb. It also has language servers, git, an outline, code folding, multiple cursors and 40+ themes.
+Aether is written from scratch on GTK 4 and GtkSourceView 5, with no Electron and no VS Code code. It builds your project, takes you straight to the errors, and debugs C, C++, Rust and Go with gdb. It also programs Arduino, ESP32 and Pico boards. It also has language servers, git, an outline, code folding, multiple cursors and 40+ themes.
 
 ## Install — one line, any distro
 
@@ -73,12 +73,12 @@ Ubuntu 22.04 and Debian 11 ship GTK older than 4.8, so use 24.04 / Debian 12 or 
 
 | | Command |
 |---|---|
-| Debian / Ubuntu `.deb` | `make deb` → `dist/aether_3.0.0_all.deb` |
+| Debian / Ubuntu `.deb` | `make deb` → `dist/aether_3.1.0_all.deb` |
 | Fedora / openSUSE `.rpm` | `make rpm` (uses `packaging/rpm/aether.spec`) |
 | Arch | `make dist && cp dist/*.tar.gz packaging/ && cd packaging && makepkg -si` |
 | Void | copy `packaging/void/template` to `void-packages/srcpkgs/aether/` and run `./xbps-src pkg aether` |
 | Alpine | `packaging/alpine/APKBUILD` |
-| Gentoo | `packaging/gentoo/aether-3.0.0.ebuild` (local overlay) |
+| Gentoo | `packaging/gentoo/aether-3.1.0.ebuild` (local overlay) |
 | Source tarball | `make dist` |
 
 ## Screenshots
@@ -116,6 +116,15 @@ Ubuntu 22.04 and Debian 11 ship GTK older than 4.8, so use 24.04 / Debian 12 or 
 - **The Debug sidebar** shows variables (structs and arrays expand), watch expressions, the call stack (click a frame to jump to it) and all breakpoints.
 - **Program I/O:** your program's input and output run in their own *Program* terminal tab, so `scanf` works. The *Debug console* takes raw gdb commands (`print arr[3]`, `x/8xb ptr`, `info registers`…).
 
+### Boards (Arduino, ESP32, Pico)
+- **Detected automatically:** Arduino sketches (`.ino`, `sketch.yaml`), PlatformIO (`platformio.ini`), ESP-IDF and MicroPython projects. Install the tool you use: `arduino-cli`, `pio`, ESP-IDF or `mpremote`. `aether --doctor` shows what is missing.
+- **Pick a board and a port** from the status bar or the *Device* sidebar page. The choice is saved in `sketch.yaml` or `platformio.ini`. 23 boards are built in (Uno, Nano, Mega, Leonardo, Micro, Uno R4, ESP32 and variants, XIAO, ESP8266, Pico, Pico W, Pico 2) and you can enter any FQBN.
+- **Build with `Ctrl+Shift+B`, upload with `Ctrl+Alt+U`:** compiler errors are clickable. `F5` on a sketch uploads and opens the monitor. A missing Arduino core is installed for you.
+- **Serial monitor (`Ctrl+Alt+M`):** needs no extra packages. Any baud rate, ANSI colours, timestamps, send with a line ending, reset button, and it reconnects when a USB board re-enumerates. It releases the port during uploads.
+- **Libraries:** install or search Arduino libraries from the Device page. Snippets like `inosetup`, `inowifi` and `esplog` are included.
+- On Linux you may need to join the serial group (`dialout` or `uucp`); the Device page tells you the exact command.
+- Not included yet: language-server support for `.ino` files and on-chip debugging.
+
 ### Smarter editing
 - **Code folding:** click ▾ in the gutter, or use `Ctrl+Shift+[` / `]`; fold all / unfold all with `Ctrl+Alt+[` / `]`. Folding works on braces, indentation (Python/YAML), Markdown headings and multi-line comments. It never changes the file.
 - **Multiple cursors:**
@@ -146,6 +155,7 @@ Branch in the status bar, file badges, a Git panel (stage, unstage, discard, dif
 | Go to symbol / line | `Ctrl+R` / `Ctrl+G` |
 | Build / tasks | `Ctrl+Shift+B` / `Ctrl+Alt+B` |
 | Run project / run file | `F5` / `Ctrl+F5` |
+| Upload to board / serial monitor | `Ctrl+Alt+U` / `Ctrl+Alt+M` |
 | Debug start/continue, stop | `F6`, `Shift+F6` |
 | Step over / into / out | `F10` / `F7` / `Shift+F7` |
 | Toggle breakpoint | `F9` |
@@ -163,7 +173,7 @@ All of these can be changed in Preferences → Keys.
 ## Publishing your own copy
 
 ```bash
-./publish.sh                 # creates github.com/<you>/aether, pushes, makes a v3.0.0 release with the .deb + tarball
+./publish.sh                 # creates github.com/<you>/aether, pushes, makes a v3.1.0 release with the .deb + tarball
 ./publish.sh --name myide    # different repo name   ·   --private   ·   --no-release
 ```
 It installs and logs in to the GitHub CLI (`gh`) if needed. It also points every link (README, `get.sh`, packages, `aether --update`) at your repo. Without `gh`, it falls back to plain `git push`.
@@ -172,11 +182,12 @@ It installs and logs in to the GitHub CLI (`gh`) if needed. It also points every
 
 ```bash
 ./bin/aether        # run from the source tree
-make test           # unit tests (folding, gdb/MI parser, project detection, error parsing)
+make test           # unit tests (folding, gdb/MI parser, project detection, error parsing, boards and serial)
+xvfb-run -a python3 tests/gui_smoke.py   # headless GUI test of the board features
 make check          # dependency doctor
 ```
 
-Code map: `aether/window.py` (main window), `editor.py` (editor tab), `ide.py` (builds + debugger glue), `debugger.py` (gdb/MI client), `folding.py`, `multicursor.py`, `outline.py`, `project.py` (build systems, templates), `tasks.py` (Build panel), `welcome.py`, `sidebar.py`, `lsp.py` / `lspui.py`, `prefs.py`, `chrome.py` (CSS).
+Code map: `aether/window.py` (main window), `editor.py` (editor tab), `ide.py` (builds + debugger glue), `debugger.py` (gdb/MI client), `folding.py`, `multicursor.py`, `outline.py`, `project.py` (build systems, templates), `embedded.py` (boards, toolchains, serial port), `embeddedui.py` (Device page, upload flow), `serialmon.py` (serial monitor), `tasks.py` (Build panel), `welcome.py`, `sidebar.py`, `lsp.py` / `lspui.py`, `prefs.py`, `chrome.py` (CSS).
 
 ### Rename before you release
 "Aether" is a working name. Run `tools/rename.sh "YourName"` once to rename the command, app ID, themes, icon and desktop files, then update `LICENSE` and `packaging/`.

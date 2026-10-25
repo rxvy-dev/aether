@@ -1,7 +1,7 @@
 # Contributor: rxvy
 # Maintainer: rxvy
 pkgname=aether
-pkgver=3.0.0
+pkgver=3.1.0
 pkgrel=0
 pkgdesc="Fast IDE for Linux with projects, gdb debugger, LSP and git"
 url="https://github.com/rxvy-dev/aether"

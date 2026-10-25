@@ -131,7 +131,27 @@ def _build_run(cr):
     cr.fill_preserve(); cr.stroke()
 
 
-ICONS = {"files": _files, "search": _search, "git": _git, "outline": _outline, "debug": _debug, "bug": _bug,
+def _chip(cr):
+    _rrect(cr, 7, 7, 10, 10, 1.5)
+    for t in (10, 14):
+        _p(cr, [(t, 7), (t, 3.5)]); _p(cr, [(t, 17), (t, 20.5)])
+        _p(cr, [(7, t), (3.5, t)]); _p(cr, [(17, t), (20.5, t)])
+    cr.stroke()
+
+
+def _upload(cr):
+    _p(cr, [(12, 16), (12, 4)]); _p(cr, [(7, 9), (12, 4), (17, 9)])
+    _p(cr, [(4, 15), (4, 20), (20, 20), (20, 15)])
+    cr.stroke()
+
+
+def _serial(cr):
+    _rrect(cr, 3, 5, 18, 14, 3)
+    _p(cr, [(6.5, 14), (9, 10), (12, 15), (15, 9), (17.5, 13)])
+    cr.stroke()
+
+
+ICONS = {"chip": _chip, "upload": _upload, "serial": _serial, "files": _files, "search": _search, "git": _git, "outline": _outline, "debug": _debug, "bug": _bug,
          "settings": _gear, "build": _hammer, "run": _play, "stop": _stop, "terminal": _terminal,
          "sidebar": _sidebar, "build-run": _build_run}
 
@@ -200,13 +220,16 @@ FT = {
     ".txt": ("Tx", "#8a8a8a"), ".xml": ("<>", "#e37933"), ".svg": ("◇", "#ffb13b"), ".png": ("▣", "#a074c4"),
     ".jpg": ("▣", "#a074c4"), ".gif": ("▣", "#a074c4"), ".o": ("o", "#6d6d6d"), ".a": ("a", "#6d6d6d"),
     ".so": ("so", "#6d6d6d"), ".s": ("as", "#6e4c13"), ".asm": ("as", "#6e4c13"), ".nix": ("❄", "#7eb6ff"),
+    ".ino": ("Ar", "#00979d"), ".pde": ("Ar", "#00979d"),
     ".diff": ("±", "#41b883"), ".patch": ("±", "#41b883"), ".lock": ("lk", "#8a8a8a"),
 }
 NAMES = {"makefile": ("Mk", "#e37933"), "gnumakefile": ("Mk", "#e37933"), "cmakelists.txt": ("Cm", "#6d8086"),
          "meson.build": ("Me", "#a074c4"), "cargo.toml": ("Rs", "#dea584"), "dockerfile": ("D", "#0db7ed"),
          ".gitignore": ("Gi", "#f14e32"), ".gitmodules": ("Gi", "#f14e32"), "license": ("©", "#cbcb41"),
          "readme.md": ("i", "#519aba"), "package.json": ("np", "#cb3837"), "go.mod": ("Go", "#00add8"),
-         "build.zig": ("Z", "#f7a41d"), ".editorconfig": ("Ec", "#6d8086"), ".env": ("En", "#faf743")}
+         "build.zig": ("Z", "#f7a41d"), ".editorconfig": ("Ec", "#6d8086"), ".env": ("En", "#faf743"),
+         "platformio.ini": ("Pi", "#f6822a"), "sketch.yaml": ("Ar", "#00979d"), "sdkconfig": ("Cf", "#e7352c"),
+         "boot.py": ("Mp", "#2b5b84")}
 
 _cache = {}
 

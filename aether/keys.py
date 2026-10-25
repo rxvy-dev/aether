@@ -28,6 +28,9 @@ DEFAULTS = {
     "fold_all": ["<Control><Alt>bracketleft"], "unfold_all": ["<Control><Alt>bracketright"],
     "add_next_occurrence": ["<Control>d"], "select_all_occurrences": ["<Control><Shift>l"],
     "cursor_above": ["<Control><Alt>Up"], "cursor_below": ["<Control><Alt>Down"],
+    # embedded boards: Arduino, ESP32, Pico, MicroPython
+    "upload": ["<Control><Alt>u"], "serial_monitor": ["<Control><Alt>m"], "select_board": [], "select_port": [],
+    "reset_board": [], "install_library": [], "search_library": [], "board_setup": [], "show_device": [],
 }
 LABELS = {
     "new": "New file", "open": "Open file", "open_folder": "Open folder", "save": "Save", "save_as": "Save as",
@@ -56,6 +59,9 @@ LABELS = {
     "fold": "Fold block", "unfold": "Unfold block", "fold_all": "Fold all", "unfold_all": "Unfold all",
     "add_next_occurrence": "Add cursor at next occurrence", "select_all_occurrences": "Select all occurrences",
     "cursor_above": "Add cursor above", "cursor_below": "Add cursor below",
+    "upload": "Upload to board", "serial_monitor": "Open serial monitor", "select_board": "Select board",
+    "select_port": "Select serial port", "reset_board": "Reset board", "install_library": "Install library / package",
+    "search_library": "Search libraries", "board_setup": "Install board support", "show_device": "Show boards & serial",
 }
 
 

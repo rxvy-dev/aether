@@ -1,11 +1,14 @@
 """Build panel: runs build / test / clean tasks, streams the output, and turns compiler
 errors into clickable links (gcc, clang, rustc/cargo, go, zig, python tracebacks)."""
-import os, time
+import os, re, time
 import gi
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, Gdk, Gio, GLib, Pango
 
 from . import project
+
+
+ANSI = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
 
 
 class BuildPanel(Gtk.Box):
@@ -101,6 +104,10 @@ class BuildPanel(Gtk.Box):
         stream.read_line_async(GLib.PRIORITY_DEFAULT, None, self._on_line)
 
     def _add_line(self, line):
+        line = ANSI.sub("", line)                      # idf.py / PlatformIO colour their output
+        if "\r" in line:                               # progress bars (esptool): keep the last state
+            parts = [x for x in line.split("\r") if x]
+            line = parts[-1] if parts else ""
         b = self.view.get_buffer()
         loc = project.parse_line(line, self.cwd)
         if loc:

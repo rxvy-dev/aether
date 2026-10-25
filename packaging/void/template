@@ -1,6 +1,6 @@
 # Template file for 'aether'  (void-packages: copy this folder to srcpkgs/aether, then ./xbps-src pkg aether)
 pkgname=aether
-version=3.0.0
+version=3.1.0
 revision=1
 build_style=gnu-makefile
 make_install_args="PREFIX=/usr"

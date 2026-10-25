@@ -14,6 +14,7 @@ from . import NAME, VERSION, data_dir, templates, runner, chrome, keys, gitutil
 from .sidebar import Sidebar
 from .extras import ExtrasMixin
 from .ide import IdeMixin
+from .embeddedui import EmbeddedMixin
 from .welcome import Welcome
 from . import icons
 from .editor import EditorTab
@@ -67,7 +68,7 @@ def git_branch(folder):
     return None
 
 
-class AetherWindow(IdeMixin, ExtrasMixin, Gtk.ApplicationWindow):
+class AetherWindow(EmbeddedMixin, IdeMixin, ExtrasMixin, Gtk.ApplicationWindow):
     def __init__(self, app, settings):
         super().__init__(application=app, title=NAME)
         self.app = app
@@ -283,6 +284,11 @@ class AetherWindow(IdeMixin, ExtrasMixin, Gtk.ApplicationWindow):
         bld.set_action_name("win.build")
         bld.add_css_class("aether-tool")
         hb.pack_end(bld)
+        self.upload_btn = icons.icon_button("upload", "Upload", "Upload to the board (Ctrl+Alt+U)", 16)
+        self.upload_btn.set_action_name("win.upload")
+        self.upload_btn.add_css_class("aether-tool")
+        self.upload_btn.set_visible(False)             # shown for Arduino / ESP32 / PlatformIO / MicroPython projects
+        hb.pack_end(self.upload_btn)
         self.config_dd = Gtk.DropDown.new_from_strings(["Debug", "Release"])
         self.config_dd.set_tooltip_text("Build configuration")
         self.config_dd.add_css_class("aether-config")
@@ -395,6 +401,7 @@ class AetherWindow(IdeMixin, ExtrasMixin, Gtk.ApplicationWindow):
             sb.append(w)
         root.append(sb)
         self._ide_setup()
+        self._emb_setup()
         self.sidebar.set_visible(bool(self.settings["sidebar"]))
         self.panel.set_visible(bool(self.settings["terminal"]))
         self._layout_sig = ("left", "bottom")
@@ -939,7 +946,7 @@ class AetherWindow(IdeMixin, ExtrasMixin, Gtk.ApplicationWindow):
                 ("lowercase", "lower_case"), ("Title Case", "title_case"), ("Trim trailing whitespace", "trim_ws"),
                 ("Cycle layout", "cycle_layout"), ("Next theme", "cycle_theme"), ("Toggle status bar", "toggle_statusbar"),
                 ("Toggle line numbers", "toggle_line_numbers")]
-        cmds = cmds + self.IDE_COMMANDS
+        cmds = cmds + self.IDE_COMMANDS + self.EMB_COMMANDS
         items = [(n, k(a), (lambda a=a: c[a]())) for n, a in cmds if a in c]
         extra = [("Toggle activity bar", lambda: (self.settings.__setitem__("activity_bar", not self.settings["activity_bar"]), self.apply_activity_bar())),
                  ("Toggle bracket pair colours", lambda: self.set_pref("bracket_colors", not self.settings["bracket_colors"])),
@@ -1050,9 +1057,12 @@ class AetherWindow(IdeMixin, ExtrasMixin, Gtk.ApplicationWindow):
 
     # ================= run =================
     def act_run(self, *_, force_file=False):
+        t = self.cur()
+        if t and t.path and t.path.lower().endswith((".ino", ".pde")):
+            self.emb_run()                        # a sketch is never compiled by the host compiler
+            return
         if not force_file and self.project_run():
             return
-        t = self.cur()
         if not t:
             self.flash("Open a file first")
             return

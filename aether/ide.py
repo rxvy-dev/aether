@@ -12,7 +12,7 @@ try:
 except (ValueError, ImportError):
     Vte = None
 
-from . import project, runner
+from . import project, runner, embedded
 from .debugger import GdbSession
 from .debugui import DebugConsole
 from .palette import Palette
@@ -93,7 +93,7 @@ class IdeMixin:
     # ================================================================ activity bar (VS Code style)
     ACTIVITIES = [("files", "files", "Explorer (Ctrl+Shift+E)"), ("search", "search", "Search (Ctrl+Shift+F)"),
                   ("git", "git", "Source control (Ctrl+Shift+G)"), ("outline", "outline", "Outline (Ctrl+Alt+O)"),
-                  ("debug", "debug", "Run and debug (Ctrl+Alt+D)")]
+                  ("debug", "debug", "Run and debug (Ctrl+Alt+D)"), ("device", "chip", "Boards & serial (Arduino, ESP32, Pico…)")]
 
     def _build_activity_bar(self):
         bar = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
@@ -201,6 +201,7 @@ class IdeMixin:
     def _ide_callbacks(self):
         cur = lambda: self.cur()
         return {
+            **self._emb_callbacks(),
             "build": lambda *_: self.act_build(), "test": lambda *_: self.act_task("test"),
             "clean": lambda *_: self.act_task("clean"), "configure": lambda *_: self.act_task("configure"),
             "tasks": lambda *_: self.act_tasks(), "run_file": lambda *_: self.act_run(force_file=True),
@@ -252,16 +253,18 @@ class IdeMixin:
             ol.follow_cursor()
         if t and t.mc.active:
             self.pos_label.set_text(f"{t.mc.count()} cursors")
+        self.emb_refresh()
 
     # ================================================================ projects
     def set_project(self, folder):
-        self.project = project.Project(folder, self.settings["build_config"]) if folder else None
+        self.project = project.Project(folder, self.settings["build_config"], self._emb_port()) if folder else None
         p = self.project
         if p and p.kind:
             self.project_label.set_label(f"⚙ {p.kind}")
             self.project_label.set_visible(True)
         else:
             self.project_label.set_visible(False)
+        self.emb_refresh(True)
 
     def show_build_panel(self):
         self.show_panel(self.panel.page_num(self.build))
@@ -272,6 +275,9 @@ class IdeMixin:
                 t.save()
 
     def act_build(self, done=None, proj=None):
+        ep = proj or self.emb_project(fresh=True)
+        if ep and ep.embedded:
+            return self.emb_build(done, ep)
         self.save_all()
         p = proj or self.project
         if p and p.tasks.get("build"):
@@ -288,6 +294,10 @@ class IdeMixin:
         return False
 
     def act_task(self, name):
+        ep = self.emb_project(fresh=True)
+        if ep:
+            self.emb_task(name, ep)
+            return
         p = self.project
         if not p or not p.tasks.get(name):
             self.flash(f"This project has no '{name}' task — add one in Project settings")
@@ -297,15 +307,17 @@ class IdeMixin:
         self.build.run(name.title(), p.tasks[name], p.root)
 
     def act_tasks(self):
-        p = self.project
+        p = self.emb_project(fresh=True) or self.project
         if not p:
             self.flash("Open a project folder first")
             return
         items = []
-        for name in ("build", "run", "test", "clean", "configure"):
+        for name in ("build", "upload", "run", "test", "clean", "configure"):
             cmd = p.tasks.get(name)
             if cmd:
                 cb = (lambda: self.act_run()) if name == "run" else (lambda n=name: self.act_build() if n == "build" else self.act_task(n))
+                if name == "upload":
+                    cb = lambda: self.emb_upload(False)
                 items.append((f"{name.title()}   —   {cmd}", "", cb))
         items.append(("Project settings…", "", lambda: self.act_project_settings()))
         Palette(self, f"{p.name} · {p.label()} tasks", items).present()
@@ -317,11 +329,16 @@ class IdeMixin:
             return
         path = os.path.join(p.root, project.CONFIG)
         if not os.path.exists(path):
-            p.save_cfg(**{k: v for k, v in p.tasks.items()}, debug_program=p.cfg.get("debug_program", ""), debug_args="")
+            if p.embedded:               # tasks hold the chosen port; keep only what is worth editing
+                p.save_cfg(baud=embedded.guess_baud(p.kind, p.root, p.cfg))
+            else:
+                p.save_cfg(**{k: v for k, v in p.tasks.items()}, debug_program=p.cfg.get("debug_program", ""), debug_args="")
         self.open_path(path)
 
     def project_run(self):
         """F5 inside a project: run its run task (or build + run its program). Returns False to fall back."""
+        if self.emb_project():
+            return self.emb_run()
         p = self.project
         t = self.cur()
         if not p or not p.kind:
@@ -475,6 +492,8 @@ class IdeMixin:
         if self.dbg:
             if self.dbg.state == "stopped":
                 self.dbg.cont()
+            return
+        if self.emb_active_guard("On-chip debugging"):
             return
         if not GdbSession.available():
             fam = runner.distro_family()
@@ -690,6 +709,7 @@ class IdeMixin:
             self.dbg_console.write("Not debugging — press F6 to start.\n", "error")
 
     def ide_shutdown(self):
+        self.emb_shutdown()
         self._save_bps()
         if self.dbg:
             self.dbg.stop()

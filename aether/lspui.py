@@ -63,6 +63,8 @@ class LspMixin:
         key = tab.tkey
         if not key or not tab.path or not self.settings["lsp"]:
             return None
+        if tab.path.lower().endswith((".ino", ".pde")):
+            return None                   # clangd can't resolve Arduino.h for sketches (use PlatformIO + C++ for completion)
         argv = lsp.server_argv(key, self.settings["lsp_servers"])
         if not argv:
             return None
