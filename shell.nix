@@ -4,7 +4,7 @@ pkgs.mkShell {
   nativeBuildInputs = with pkgs; [ wrapGAppsHook4 gobject-introspection ];
   buildInputs = with pkgs; [
     (python3.withPackages (ps: [ ps.pygobject3 ps.pycairo ]))
-    gtk4 gtksourceview5 vte-gtk4 gsettings-desktop-schemas
+    gtk4 gtksourceview5 vte-gtk4 webkitgtk_6_0 gsettings-desktop-schemas
     gdb gcc gnumake git
   ];
   shellHook = ''

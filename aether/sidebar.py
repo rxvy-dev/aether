@@ -661,11 +661,13 @@ class Sidebar(Gtk.Box):
         self.outline, self.debug = OutlinePage(win), DebugPage(win)
         from .embeddedui import DevicePage
         self.device = DevicePage(win)
+        from .webui import WebPage
+        self.web = WebPage(win)
         first = None
         self.buttons = {}
         for name, label, page in (("files", "Files", self.files), ("search", "Search", self.search), ("git", "Git", self.git),
                                   ("outline", "Outline", self.outline), ("debug", "Debug", self.debug),
-                                  ("device", "Device", self.device)):
+                                  ("device", "Device", self.device), ("web", "Web", self.web)):
             b = Gtk.ToggleButton(label=label)
             if first:
                 b.set_group(first)
@@ -690,3 +692,5 @@ class Sidebar(Gtk.Box):
             self.search.entry.grab_focus()
         elif name == "outline":
             self.outline.set_tab(self.win.cur())
+        elif name == "web":
+            self.web.update()

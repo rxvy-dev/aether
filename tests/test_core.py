@@ -56,7 +56,7 @@ class Debugger(unittest.TestCase):
 class Projects(unittest.TestCase):
     def test_create_and_detect_every_template(self):
         expected = {"c": "Makefile", "c-meson": "Meson", "cpp": "CMake", "python": "Python", "rust": "Cargo",
-                    "go": "Go", "web": None, "bash": None}
+                    "go": "Go", "web": "Web", "bash": None}
         with tempfile.TemporaryDirectory() as d:
             for key, kind in expected.items():
                 root, main = project.create(d, f"demo {key}", key, git=False)

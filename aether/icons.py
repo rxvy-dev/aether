@@ -151,7 +151,63 @@ def _serial(cr):
     cr.stroke()
 
 
-ICONS = {"chip": _chip, "upload": _upload, "serial": _serial, "files": _files, "search": _search, "git": _git, "outline": _outline, "debug": _debug, "bug": _bug,
+def _globe(cr):
+    cr.new_sub_path(); cr.arc(12, 12, 8.5, 0, 2 * math.pi)
+    cr.save(); cr.translate(12, 12); cr.scale(0.42, 1); cr.new_sub_path(); cr.arc(0, 0, 8.5, 0, 2 * math.pi); cr.restore()
+    _p(cr, [(3.5, 12), (20.5, 12)]); _p(cr, [(5, 7.5), (19, 7.5)]); _p(cr, [(5, 16.5), (19, 16.5)])
+    cr.stroke()
+
+
+def _desktop(cr):
+    _rrect(cr, 3, 4, 18, 12, 1.8)
+    _p(cr, [(12, 16), (12, 20)]); _p(cr, [(8, 20), (16, 20)])
+    cr.stroke()
+
+
+def _tablet(cr):
+    _rrect(cr, 5, 3, 14, 18, 2.2)
+    _p(cr, [(11, 18), (13, 18)])
+    cr.stroke()
+
+
+def _phone(cr):
+    _rrect(cr, 7.5, 2.5, 9, 19, 2.2)
+    _p(cr, [(11, 18.5), (13, 18.5)])
+    cr.stroke()
+
+
+def _rotate(cr):
+    cr.new_sub_path(); cr.arc(12, 12, 7.5, math.radians(-60), math.radians(200))
+    cr.stroke()
+    _p(cr, [(15.8, 3.2), (16.3, 6.6), (12.9, 7.2)])
+    cr.stroke()
+
+
+def _reload(cr):
+    cr.new_sub_path(); cr.arc(12, 12, 7.5, math.radians(20), math.radians(330))
+    cr.stroke()
+    _p(cr, [(19.8, 4.5), (19.6, 8.8), (15.4, 8.4)])
+    cr.stroke()
+
+
+def _external(cr):
+    _p(cr, [(13, 4), (20, 4), (20, 11)]); _p(cr, [(20, 4), (11, 13)])
+    _p(cr, [(17, 14), (17, 20), (4, 20), (4, 7), (10, 7)])
+    cr.stroke()
+
+
+def _inspect(cr):
+    _p(cr, [(8, 7), (3, 12), (8, 17)]); _p(cr, [(16, 7), (21, 12), (16, 17)]); _p(cr, [(13.5, 5), (10.5, 19)])
+    cr.stroke()
+
+
+def _close(cr):
+    _p(cr, [(6, 6), (18, 18)]); _p(cr, [(18, 6), (6, 18)])
+    cr.stroke()
+
+
+ICONS = {"globe": _globe, "desktop": _desktop, "tablet": _tablet, "phone": _phone, "rotate": _rotate, "reload": _reload,
+         "external": _external, "inspect": _inspect, "close": _close, "chip": _chip, "upload": _upload, "serial": _serial, "files": _files, "search": _search, "git": _git, "outline": _outline, "debug": _debug, "bug": _bug,
          "settings": _gear, "build": _hammer, "run": _play, "stop": _stop, "terminal": _terminal,
          "sidebar": _sidebar, "build-run": _build_run}
 
@@ -302,10 +358,130 @@ def file_kind(path, is_dir=False):
     return FT.get(os.path.splitext(n)[1], ("doc", None))
 
 
+# ------------------------------------------------------------------ your own icon pack
+# Drop SVG / PNG files into ~/.config/aether/icons (or the folder in settings "icon_pack") and they replace the
+# built-in badges everywhere: the language picker, the new-project list, the file tree and tabs.
+# Names are tried in this order:  <language key>.svg  (python.svg, javascript.svg, html.svg, css.svg, web.svg …),
+# then <extension>.svg  (py.svg, js.svg …), then <file name>.svg  (makefile.svg, dockerfile.svg …).  PNG works too.
+_pack_cache = {}
+
+
+def pack_dir():
+    d = os.environ.get("AETHER_ICON_PACK") or (_pack_setting[0] if _pack_setting else "")
+    if not d:
+        from .settings import CFG_DIR
+        d = os.path.join(CFG_DIR, "icons")
+    return os.path.expanduser(d)
+
+
+_pack_setting = []
+
+
+def set_pack_dir(path):
+    """Called by the window with settings['icon_pack'] so we don't read settings on every lookup."""
+    _pack_setting[:] = [path or ""]
+    _pack_cache.clear()
+    _cache.clear()
+
+
+def pack_texture(names):
+    d = pack_dir()
+    if not d or not os.path.isdir(d):
+        return None
+    for n in names:
+        if not n:
+            continue
+        key = (d, n)
+        if key in _pack_cache:
+            if _pack_cache[key]:
+                return _pack_cache[key]
+            continue
+        tex = None
+        for ext in (".svg", ".png"):
+            f = os.path.join(d, n + ext)
+            if os.path.isfile(f):
+                try:
+                    tex = Gdk.Texture.new_from_filename(f)
+                except Exception:
+                    tex = None
+                if tex:
+                    break
+        _pack_cache[key] = tex
+        if tex:
+            return tex
+    return None
+
+
+def _pack_names_for_path(path):
+    from . import templates
+    base = os.path.basename(path).lower()
+    ext = os.path.splitext(base)[1].lstrip(".")
+    return [templates.key_for_path(path), ext, base]
+
+
+def _tile(label, color, px):
+    """Language tile for pickers: a rounded square in the language colour with its short name."""
+    surf = cairo.ImageSurface(cairo.FORMAT_ARGB32, px, px)
+    cr = cairo.Context(surf)
+    r, g, b = _hex(color)
+    _rrect(cr, 0.5, 0.5, px - 1, px - 1, px * 0.22)
+    cr.set_source_rgb(r, g, b)
+    cr.fill()
+    lum = 0.2126 * r + 0.7152 * g + 0.0722 * b
+    cr.set_source_rgb(*((0.08, 0.08, 0.1) if lum > 0.6 else (1, 1, 1)))
+    cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+    cr.set_font_size(px * (0.5 if len(label) == 1 else 0.4 if len(label) == 2 else 0.3))
+    ext = cr.text_extents(label)
+    cr.move_to((px - ext.width) / 2 - ext.x_bearing, (px - ext.height) / 2 - ext.y_bearing)
+    cr.show_text(label)
+    return surf
+
+
+LANG_TILES = {"web": ("</>", "#e44d26"), "shellscript": ("$_", "#4eaa25"), "makefile": ("Mk", "#e37933"),
+              "dockerfile": ("D", "#0db7ed"), "markdown": ("M↓", "#519aba"), "toml": ("Tm", "#9c4221"),
+              "yaml": ("Ym", "#cb171e"), "sql": ("Sq", "#e38c00"), "json": ("{}", "#cbcb41"), "c": ("C", "#3a6fb0"),
+              "cpp": ("C++", "#00599c"), "python": ("Py", "#3776ab"), "javascript": ("JS", "#f7df1e"),
+              "typescript": ("TS", "#3178c6"), "html": ("5", "#e44d26"), "css": ("3", "#1572b6"), "rust": ("Rs", "#ce422b"),
+              "go": ("Go", "#00add8"), "java": ("J", "#e76f00"), "csharp": ("C#", "#68217a"), "kotlin": ("K", "#7f52ff"),
+              "lua": ("Lu", "#000080"), "ruby": ("Rb", "#cc342d"), "php": ("php", "#777bb4"), "zig": ("Z", "#f7a41d"),
+              "swift": ("Sw", "#f05138"), "dart": ("D", "#0175c2"), "haskell": ("λ", "#5e5086"), "elixir": ("Ex", "#4b275f"),
+              "julia": ("jl", "#9558b2"), "r": ("R", "#276dc3"), "perl": ("Pl", "#39457e"), "scala": ("Sc", "#dc322f"),
+              "arduino": ("∞", "#00979d")}
+
+
+def lang_texture(key, px=48):
+    """Picker icon for a language key (or "web" for HTML + CSS + JS): your icon pack first, then a tile."""
+    if not HAS_CAIRO:
+        return None
+    from . import templates
+    ext = (templates.KEY_EXT.get(key) or "").lstrip(".")
+    tex = pack_texture([key, ext])
+    if tex:
+        return tex
+    ck = ("tile", key, px)
+    if ck not in _cache:
+        label, color = LANG_TILES.get(key) or file_kind("x." + ext)
+        if label in ("doc", "dir"):
+            label, color = (key[:2].title(), "#6d8086")
+        _cache[ck] = _texture_from_surface(_tile(label, color or "#6d8086", px))
+    return _cache[ck]
+
+
+def lang_image(key, size=22):
+    tex = lang_texture(key)
+    img = Gtk.Image.new_from_paintable(tex) if tex else Gtk.Image()
+    img.set_pixel_size(size)
+    return img
+
+
 def file_texture(path, is_dir=False, opened=False, px=32):
     """Texture for the file tree / tab labels (rendered at 2× for HiDPI)."""
     if not HAS_CAIRO:
         return None
+    if not is_dir:
+        tex = pack_texture(_pack_names_for_path(path))
+        if tex:
+            return tex
     kind = file_kind(path, is_dir)
     key = (kind, opened, px)
     t = _cache.get(key)

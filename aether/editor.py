@@ -4,7 +4,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("GtkSource", "5")
 from gi.repository import Gtk, Gdk, GtkSource, GLib, Gio, Pango, GObject
 
-from . import templates, lint, gitutil
+from . import templates, lint, gitutil, emmet
 from .folding import Folding
 from .multicursor import MultiCursor
 from .brackets import BracketColors
@@ -23,6 +23,9 @@ COMMENT = {"c": "//", "cpp": "//", "python": "#", "javascript": "//", "typescrip
 WORD_OPENERS = {"lua": ("then", "do", "else", "repeat"), "shellscript": ("then", "do", "else"),
                 "ruby": ("then", "do", "else")}
 DEDENT_AFTER = {"python": ("return", "break", "continue", "pass", "raise")}
+MARKUP = {"html", "xml", "php", "vue", "svelte"}          # tag-aware Enter, </ auto-close, Emmet
+EMMET = {"html", "php", "vue", "svelte"}
+OPEN_TAG_END = re.compile(r"<([A-Za-z][\w.:-]*)(?:\s[^<>]*)?(?<!/)>\s*$")
 
 
 def _icon(attrs, name):
@@ -453,10 +456,15 @@ class EditorTab(Gtk.Box):
                 b.end_user_action()
                 return True
             return False
+        if keyval == Gdk.KEY_Tab and self.tkey in EMMET and not (state & Gdk.ModifierType.SHIFT_MASK) \
+                and self.settings["emmet"] and not b.get_has_selection():
+            return self._emmet()
         ch = chr(Gdk.keyval_to_unicode(keyval)) if Gdk.keyval_to_unicode(keyval) else ""
         if not ch or not ch.isprintable():
             return False
         it = b.get_iter_at_mark(b.get_insert())
+        if ch == "/" and self.tkey in MARKUP and self._char_at(it, -1) == "<" and self.settings["auto_pairs"]:
+            return self._close_tag(it)
         nxt = self._char_at(it, 0)
         if self.settings["auto_pairs"]:
             if ch in CLOSERS and nxt == ch and not b.get_has_selection():
@@ -523,7 +531,20 @@ class EditorTab(Gtk.Box):
         unit = self.indent_unit()
         extra = ""
         last = stripped[-1:] if stripped else ""
-        if last in ("{", "(", "["):
+        tag_open = OPEN_TAG_END.search(before) if self.tkey in MARKUP else None
+        if tag_open and tag_open.group(1).lower() in self.VOID_TAGS:
+            tag_open = None
+        if tag_open and re.match(r"\s*</" + re.escape(tag_open.group(1)) + r"\s*>", after):
+            # <div>|</div>  ->  three lines, cursor on the indented middle one
+            b.insert_at_cursor("\n" + indent + unit + "\n" + indent)
+            it = b.get_iter_at_mark(b.get_insert())
+            it.backward_line()
+            it.forward_to_line_end()
+            b.place_cursor(it)
+            b.end_user_action()
+            self.active_view.scroll_mark_onscreen(b.get_insert())
+            return True
+        if last in ("{", "(", "[") or tag_open:
             extra = unit
         elif last == ":" and self.tkey in ("python", "yaml"):
             extra = unit
@@ -548,6 +569,92 @@ class EditorTab(Gtk.Box):
                 # blank line: drop whitespace-only indentation carried on empty lines
                 pass
             b.insert_at_cursor("\n" + indent + extra)
+        b.end_user_action()
+        self.active_view.scroll_mark_onscreen(b.get_insert())
+        return True
+
+    def _close_tag(self, it):
+        """Typing '</' finishes the innermost open tag and lines it up with its opening tag."""
+        b = self.buffer
+        start = it.copy()
+        start.backward_chars(20000)
+        text = b.get_text(start, it, False)[:-1]
+        stack = []
+        for m in re.finditer(r"<!--.*?-->|<(/?)([A-Za-z][\w.:-]*)[^<>]*?(/?)>", text, re.S):
+            if not m.group(2) or m.group(3) or m.group(2).lower() in self.VOID_TAGS:
+                continue
+            name = m.group(2)
+            if m.group(1):
+                for i in range(len(stack) - 1, -1, -1):
+                    if stack[i][0].lower() == name.lower():
+                        del stack[i:]
+                        break
+            else:
+                stack.append((name, m.start()))
+        if not stack:
+            return False
+        name, pos = stack[-1]
+        before, after = self._line_info(it)
+        m = re.match(r"\s*</" + re.escape(name) + r"\s*>", after)
+        if m:                                               # it's already closed (auto-closed on '>'): step over it
+            b.begin_user_action()
+            s = it.copy()
+            s.backward_char()
+            b.delete(s, it)                                 # the '<' just typed
+            i2 = b.get_iter_at_mark(b.get_insert())
+            i2.forward_chars(m.end())
+            b.place_cursor(i2)
+            b.end_user_action()
+            return True
+        b.begin_user_action()
+        if before[:-1].strip() == "":                       # alone on the line: match the opening tag's indent
+            line_start = text.rfind("\n", 0, pos) + 1
+            want = re.match(r"[ \t]*", text[line_start:]).group(0)
+            s = it.copy()
+            s.set_line_offset(0)
+            b.delete(s, it)
+            b.insert_at_cursor(want + "<")
+        nxt = after[:1]
+        b.insert_at_cursor("/" + name + (">" if nxt != ">" else ""))
+        if nxt == ">":
+            i2 = b.get_iter_at_mark(b.get_insert())
+            i2.forward_char()
+            b.place_cursor(i2)
+        b.end_user_action()
+        return True
+
+    def _emmet(self):
+        b = self.buffer
+        it = b.get_iter_at_mark(b.get_insert())
+        before, after = self._line_info(it)
+        if after[:1] and _isword(after[:1]):
+            return False
+        abbr = emmet.extract(before)
+        if not abbr:
+            return False
+        lang = self.language.get_id() if self.language else None
+        try:
+            if lang and GtkSource.SnippetManager.get_default().get_snippet(None, lang, abbr):
+                return False                               # a snippet with this trigger wins (e.g. "main")
+        except (TypeError, AttributeError):
+            pass
+        res = emmet.expand(abbr, self.indent_unit())
+        if not res:
+            return False
+        text, cur = res
+        indent = re.match(r"[ \t]*", before).group(0)
+        text = text.replace("\n", "\n" + indent)
+        cur += res[0][:cur].count("\n") * len(indent)      # each earlier line got the indent prefix
+        s = it.copy()
+        s.backward_chars(len(abbr))
+        b.begin_user_action()
+        b.delete(s, it)
+        mark = b.create_mark(None, b.get_iter_at_mark(b.get_insert()), True)
+        b.insert_at_cursor(text)
+        pos = b.get_iter_at_mark(mark)
+        pos.forward_chars(cur)
+        b.place_cursor(pos)
+        b.delete_mark(mark)
         b.end_user_action()
         self.active_view.scroll_mark_onscreen(b.get_insert())
         return True

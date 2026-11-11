@@ -103,23 +103,32 @@ detect_pm() {
 PM=$(detect_pm)
 
 deps_for() {
+  WEB=""                                   # WebKitGTK 6.0: the built-in live web preview (optional, installed on its own)
   case "$1" in
     pacman)       CORE="python python-gobject python-cairo gtk4 gtksourceview5 make"
-                  EXTRA="vte4 gdb base-devel git" ;;
+                  EXTRA="vte4 gdb base-devel git"
+                  WEB="webkitgtk-6.0" ;;
     apt-get)      CORE="python3 python3-gi python3-gi-cairo gir1.2-gtk-4.0 gir1.2-gtksource-5 make"
-                  EXTRA="gir1.2-vte-3.91 gdb build-essential git" ;;
+                  EXTRA="gir1.2-vte-3.91 gdb build-essential git"
+                  WEB="gir1.2-webkit-6.0" ;;
     dnf|yum)      CORE="python3 python3-gobject python3-cairo gtk4 gtksourceview5 make"
-                  EXTRA="vte291-gtk4 gdb gcc gcc-c++ make git" ;;
+                  EXTRA="vte291-gtk4 gdb gcc gcc-c++ make git"
+                  WEB="webkitgtk6.0" ;;
     rpm-ostree)   CORE="python3-gobject python3-cairo gtk4 gtksourceview5"
-                  EXTRA="vte291-gtk4 gdb gcc gcc-c++ make git" ;;
+                  EXTRA="vte291-gtk4 gdb gcc gcc-c++ make git"
+                  WEB="webkitgtk6.0" ;;
     zypper)       CORE="python3 python3-gobject python3-gobject-cairo python3-gobject-Gdk typelib-1_0-Gtk-4_0 typelib-1_0-GtkSource-5 make"
-                  EXTRA="typelib-1_0-Vte-3_91 gdb gcc gcc-c++ make git" ;;
+                  EXTRA="typelib-1_0-Vte-3_91 gdb gcc gcc-c++ make git"
+                  WEB="typelib-1_0-WebKit-6_0" ;;
     apk)          CORE="python3 py3-gobject3 py3-cairo gtk4.0 gtksourceview5 make"
-                  EXTRA="vte3-gtk4 gdb build-base git" ;;
+                  EXTRA="vte3-gtk4 gdb build-base git"
+                  WEB="webkit2gtk-6.0" ;;
     xbps-install) CORE="python3 python3-gobject python3-cairo gtk4 gtksourceview5 make"
-                  EXTRA="vte3-gtk4 gdb base-devel git" ;;
+                  EXTRA="vte3-gtk4 gdb base-devel git"
+                  WEB="libwebkitgtk60" ;;
     emerge)       CORE="dev-python/pygobject dev-python/pycairo gui-libs/gtk gui-libs/gtksourceview:5"
-                  EXTRA="x11-libs/vte dev-debug/gdb dev-vcs/git" ;;
+                  EXTRA="x11-libs/vte dev-debug/gdb dev-vcs/git"
+                  WEB="net-libs/webkit-gtk:6" ;;
     eopkg)        CORE="python3 python-gobject python-cairo libgtk-4 gtksourceview5 make"
                   EXTRA="vte-gtk4 gdb gcc make git" ;;
     urpmi)        CORE="python3-gobject3 python3-cairo gtk4 gtksourceview5 make"
@@ -132,8 +141,19 @@ deps_for() {
   [ "$MINIMAL" = 1 ] || PKGS="$CORE $EXTRA"
 }
 
+web_cmd() {
+  deps_for "$PM"
+  [ -n "$WEB" ] && [ "$MINIMAL" != 1 ] || { echo ""; return; }
+  PKGS="$WEB"
+  install_cmd_for
+}
+
 install_cmd() {
   deps_for "$PM"
+  install_cmd_for
+}
+
+install_cmd_for() {
   case "$PM" in
     pacman)       echo "$SUDO pacman -S --needed --noconfirm $PKGS" ;;
     apt-get)      echo "$SUDO apt-get update -qq && $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y $PKGS" ;;
@@ -171,7 +191,8 @@ PY
 case "$ACTION" in
   print)
     echo "${PRETTY_NAME:-unknown distro} · $PM"
-    c=$(install_cmd); echo "  ${c:-(no automatic command for this system — see README)}"; exit 0 ;;
+    c=$(install_cmd); echo "  ${c:-(no automatic command for this system — see README)}"
+    w=$(web_cmd); [ -n "$w" ] && echo "  $w     # optional: built-in web preview"; exit 0 ;;
   check) doctor; exit $? ;;
   uninstall)
     for p in "$HOME/.local" /usr/local /usr; do
@@ -207,6 +228,7 @@ else
     urpmi|eopkg|swupd) info "package names for $PM are best-effort" ;;
   esac
   info "$D$CMD$X"
+  WEBC=$(web_cmd); [ -n "$WEBC" ] && info "$D$WEBC$X   (web preview, optional)"
   if ask "Install these packages?"; then
     # get the password now, so it isn't hidden behind the spinner
     if [ "$SUDO" = sudo ]; then sudo -v < /dev/tty || die "sudo failed"; fi
@@ -214,6 +236,11 @@ else
     if ! run_pkgs "$CMD" "installing packages"; then
       MINIMAL=1
       run_pkgs "$(install_cmd)" "retrying with only the required packages" || warn "package install failed — continuing; see the check below"
+    fi
+    WCMD=$(web_cmd)
+    if [ -n "$WCMD" ]; then          # separate, so a missing WebKit package never blocks the rest
+      run_pkgs "$WCMD" "installing the web preview engine (WebKitGTK 6.0)" \
+        || warn "WebKitGTK 6.0 not installed — web pages will preview in your browser instead"
     fi
   else
     info "skipped"
@@ -239,7 +266,7 @@ ok "app launcher entry + icon installed"
 
 step "Final check"
 if doctor >/tmp/aether-doctor.$$ 2>&1; then
-  grep -E "✔|•" /tmp/aether-doctor.$$ | grep -E "GTK|GtkSource|gdb|VTE|git" | sed 's/^ */  /'
+  grep -E "✔|•" /tmp/aether-doctor.$$ | grep -E "GTK|GtkSource|gdb|VTE|WebKit|git" | sed 's/^ */  /'
   rm -f /tmp/aether-doctor.$$
   printf '\n  %s%sAether is installed.%s  Start it from your app menu, or run:  %saether%s  (aether . opens this folder)\n\n' "$G" "$B" "$X" "$B" "$X"
 else

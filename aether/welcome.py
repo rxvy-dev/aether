@@ -5,14 +5,17 @@ import gi
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, Gio, GLib, Pango
 
-from . import NAME, VERSION, project, embedded
+from . import NAME, VERSION, project, embedded, icons, templates
 
 SHORTCUTS = [("Command palette", "Ctrl+Shift+P"), ("Quick open file", "Ctrl+P"), ("Build project", "Ctrl+Shift+B"),
              ("Run", "F5"), ("Start debugging", "F6"), ("Toggle breakpoint", "F9"), ("Add next occurrence", "Ctrl+D"),
              ("Fold / unfold block", "Ctrl+Shift+[  ]"), ("Outline", "Ctrl+Alt+O")]
 
 
-TIPS = ["Ctrl+D selects the word under the cursor — press again to add the next match as another cursor.",
+TIPS = ["Ctrl+Alt+W opens a live preview of your web page — it updates while you type, even offline.",
+        "In HTML, type ul>li*3 (or ! for a whole page) and press Tab — Emmet is built in.",
+        "Ctrl+Alt+1 / 2 / 3 jumps between a page's HTML, CSS and JS.",
+        "Ctrl+D selects the word under the cursor — press again to add the next match as another cursor.",
         "Click the gutter (or press F9) to set a breakpoint, then F6 to debug.",
         "Ctrl+Shift+P opens the command palette — every action lives there.",
         "Alt+Click puts a cursor anywhere. Esc goes back to one.",
@@ -69,14 +72,15 @@ class Welcome(Gtk.ScrolledWindow):
         head.append(tb)
         outer.append(head)
 
-        actions = Gtk.FlowBox(selection_mode=Gtk.SelectionMode.NONE, max_children_per_line=4, min_children_per_line=2,
+        actions = Gtk.FlowBox(selection_mode=Gtk.SelectionMode.NONE, max_children_per_line=5, min_children_per_line=2,
                               column_spacing=10, row_spacing=10, homogeneous=True)
         actions.set_margin_top(28)
         for icon, title, desc, cb in (
                 ("＋", "New project", "C, C++, Rust, Python, Go, web…", lambda: NewProjectDialog(win).present()),
                 ("⌂", "Open folder", "Ctrl+Shift+O", lambda: win.act_open_folder()),
                 ("⎇", "Clone repository", "git clone a URL", lambda: CloneDialog(win).present()),
-                ("✎", "New file", "pick a language — Ctrl+N", lambda: win.act_new())):
+                ("✎", "New file", "pick a language — Ctrl+N", lambda: win.act_new()),
+                ("</>", "Web page", "HTML + CSS + JS, live preview", lambda: win.web_new_page())):
             b = Gtk.Button()
             b.add_css_class("aether-action")
             bx = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
@@ -280,6 +284,11 @@ class NewProjectDialog(_Dialog):
         for key, (label, desc, _files, _main) in project.TEMPLATES.items():
             row = Gtk.ListBoxRow()
             row._key = key
+            outer_row = Gtk.Box(spacing=12)
+            lang = {"c-meson": "c", "web": "web", "bash": "shellscript", "esp-idf": "c", "micropython": "python"}.get(key, key)
+            if lang not in icons.LANG_TILES and icons.pack_texture([lang]) is None:
+                lang = templates.key_for_path(_main) or ("arduino" if _main.endswith(".ino") else lang)
+            outer_row.append(icons.lang_image(lang, 28))
             bx = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=1, margin_top=5, margin_bottom=5)
             a = Gtk.Label(label=label, xalign=0)
             a.add_css_class("aether-card-title")
@@ -287,7 +296,8 @@ class NewProjectDialog(_Dialog):
             d = Gtk.Label(label=desc, xalign=0)
             d.add_css_class("dim-label")
             bx.append(d)
-            row.set_child(bx)
+            outer_row.append(bx)
+            row.set_child(outer_row)
             self.list.append(row)
         self.list.select_row(self.list.get_row_at_index(0))
         self.list.connect("row-activated", lambda *_: self.create())
@@ -318,7 +328,11 @@ class NewProjectDialog(_Dialog):
         self.close()
         self.win.open_folder(root)
         self.win.open_path(main)
-        hint = embedded.HINTS.get(row._key) or "Ctrl+Shift+B builds, F5 runs, F6 debugs"
+        if row._key == "web":
+            self.win.web_open_tabs(main)
+            self.win.web_show(main)
+        hint = embedded.HINTS.get(row._key) or ("live preview beside the editor — edit HTML, CSS or JS and watch it update"
+                                                if row._key == "web" else "Ctrl+Shift+B builds, F5 runs, F6 debugs")
         self.win.flash(f"Created {os.path.basename(root)} — {hint}", 9000)
 
 

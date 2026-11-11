@@ -1,7 +1,7 @@
 # Fedora / RHEL 9+ (EPEL) / openSUSE:
-#   make dist && rpmbuild -ta dist/aether-3.1.0.tar.gz      (or: make rpm)
+#   make dist && rpmbuild -ta dist/aether-3.2.0.tar.gz      (or: make rpm)
 Name:           aether
-Version:        3.1.0
+Version:        3.2.0
 Release:        1%{?dist}
 Summary:        Fast IDE for Linux
 License:        MIT
@@ -12,10 +12,10 @@ BuildRequires:  make
 Requires:       python3 >= 3.9
 %if 0%{?suse_version}
 Requires:       python3-gobject python3-gobject-cairo python3-gobject-Gdk typelib-1_0-Gtk-4_0 typelib-1_0-GtkSource-5
-Recommends:     typelib-1_0-Vte-3_91 gdb gcc make git
+Recommends:     typelib-1_0-Vte-3_91 typelib-1_0-WebKit-6_0 gdb gcc make git
 %else
 Requires:       python3-gobject python3-cairo gtk4 >= 4.8 gtksourceview5 >= 5.6
-Recommends:     vte291-gtk4 gdb gcc gcc-c++ make git
+Recommends:     vte291-gtk4 webkitgtk6.0 gdb gcc gcc-c++ make git
 %endif
 
 %description

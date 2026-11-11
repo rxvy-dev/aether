@@ -2,7 +2,7 @@ import os
 
 NAME = "Aether"
 APP_ID = "io.github.aether.Editor"
-VERSION = "3.1.0"
+VERSION = "3.2.0"
 REPO = "rxvy-dev/aether"          # GitHub owner/name — publish.sh updates this
 
 

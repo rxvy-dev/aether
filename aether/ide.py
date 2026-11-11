@@ -93,7 +93,8 @@ class IdeMixin:
     # ================================================================ activity bar (VS Code style)
     ACTIVITIES = [("files", "files", "Explorer (Ctrl+Shift+E)"), ("search", "search", "Search (Ctrl+Shift+F)"),
                   ("git", "git", "Source control (Ctrl+Shift+G)"), ("outline", "outline", "Outline (Ctrl+Alt+O)"),
-                  ("debug", "debug", "Run and debug (Ctrl+Alt+D)"), ("device", "chip", "Boards & serial (Arduino, ESP32, Pico…)")]
+                  ("debug", "debug", "Run and debug (Ctrl+Alt+D)"), ("device", "chip", "Boards & serial (Arduino, ESP32, Pico…)"),
+                  ("web", "globe", "Web — live preview, HTML / CSS / JS, console")]
 
     def _build_activity_bar(self):
         bar = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)

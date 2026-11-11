@@ -42,6 +42,7 @@ DEFAULTS = {
     "auto_save": False,
     "format_on_save": True,          # trim trailing whitespace + final newline
     "auto_pairs": True,
+    "emmet": True,                   # Tab expands Emmet abbreviations in HTML (ul>li*3, !, .card>h2+p)
     "lint": True,
     "starter_on_new_file": True,     # insert `main` skeleton into new empty files
     "right_margin": 100,
@@ -64,6 +65,10 @@ DEFAULTS = {
     "build_config": "Debug",         # Debug | Release
     "panel_pos": 0,                  # editor/panel split (0 = default)
     "serial": {"port": "", "baud": 115200},   # last used serial port / speed (embedded boards)
+    "web_live": True,                # preview updates while you type (not only on save)
+    "web_device": "Responsive",      # preview size: Responsive / Desktop / Tablet / Phone …
+    "web_preview_width": 0,          # editor | preview split (0 = half)
+    "icon_pack": "",                 # folder with your own file / language icons (default ~/.config/aether/icons)
 }
 
 

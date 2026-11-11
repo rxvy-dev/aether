@@ -12,7 +12,7 @@
 
 ![Aether debugging a C program](docs/screenshot-debug.png)
 
-Aether is written from scratch on GTK 4 and GtkSourceView 5, with no Electron and no VS Code code. It builds your project, takes you straight to the errors, and debugs C, C++, Rust and Go with gdb. It also programs Arduino, ESP32 and Pico boards. It also has language servers, git, an outline, code folding, multiple cursors and 40+ themes.
+Aether is written from scratch on GTK 4 and GtkSourceView 5, with no Electron and no VS Code code. It builds your project, takes you straight to the errors, and debugs C, C++, Rust and Go with gdb. It also programs Arduino, ESP32 and Pico boards, and has a live web preview for HTML, CSS and JavaScript that works offline. It also has language servers, git, an outline, code folding, multiple cursors and 40+ themes.
 
 ## Install — one line, any distro
 
@@ -64,7 +64,7 @@ Don't want to install? Run it from the folder with `./bin/aether`.
 ### Requirements
 
 - **Required:** Python 3.9+, PyGObject with its cairo bridge, GTK 4.8+, GtkSourceView 5.6+.
-- **Recommended:** VTE for GTK 4 (terminal), gdb (debugger), gcc/clang + make, git.
+- **Recommended:** VTE for GTK 4 (terminal), WebKitGTK 6.0 (built-in web preview), gdb (debugger), gcc/clang + make, git.
 - **Optional:** language servers (`clangd`, `pyright`, `rust-analyzer`, `gopls`, `typescript-language-server`…), `clang-format`, `black`/`ruff`, `rustfmt`, `prettier`, `shellcheck`.
 
 Ubuntu 22.04 and Debian 11 ship GTK older than 4.8, so use 24.04 / Debian 12 or newer.
@@ -73,12 +73,12 @@ Ubuntu 22.04 and Debian 11 ship GTK older than 4.8, so use 24.04 / Debian 12 or 
 
 | | Command |
 |---|---|
-| Debian / Ubuntu `.deb` | `make deb` → `dist/aether_3.1.0_all.deb` |
+| Debian / Ubuntu `.deb` | `make deb` → `dist/aether_3.2.0_all.deb` |
 | Fedora / openSUSE `.rpm` | `make rpm` (uses `packaging/rpm/aether.spec`) |
 | Arch | `make dist && cp dist/*.tar.gz packaging/ && cd packaging && makepkg -si` |
 | Void | copy `packaging/void/template` to `void-packages/srcpkgs/aether/` and run `./xbps-src pkg aether` |
 | Alpine | `packaging/alpine/APKBUILD` |
-| Gentoo | `packaging/gentoo/aether-3.1.0.ebuild` (local overlay) |
+| Gentoo | `packaging/gentoo/aether-3.2.0.ebuild` (local overlay) |
 | Source tarball | `make dist` |
 
 ## Screenshots
@@ -116,6 +116,19 @@ Ubuntu 22.04 and Debian 11 ship GTK older than 4.8, so use 24.04 / Debian 12 or 
 - **The Debug sidebar** shows variables (structs and arrays expand), watch expressions, the call stack (click a frame to jump to it) and all breakpoints.
 - **Program I/O:** your program's input and output run in their own *Program* terminal tab, so `scanf` works. The *Debug console* takes raw gdb commands (`print arr[3]`, `x/8xb ptr`, `info registers`…).
 
+### Web development (HTML, CSS, JavaScript)
+- **Live preview beside the editor** (`Ctrl+Alt+W`, or `F5` on an HTML/CSS file). It updates **as you type**, before you save. CSS changes are swapped in without reloading the page, so the page keeps its state. The scroll position is kept on reload.
+- **Works offline:** a small built-in server on `127.0.0.1` (port 5500, like Live Server). Nothing leaves your computer. The preview uses WebKitGTK 6.0. Without it, the same live preview opens in your browser.
+- **HTML · CSS · JS switcher** (`Ctrl+Alt+1/2/3`): jump between a page and the stylesheets and scripts it loads. If one is missing, Aether creates it and adds the `<link>` / `<script>` tag for you. `Ctrl+Alt+H` opens all three as tabs side by side.
+- **Device sizes:** responsive, desktop (1920), tablet (768) and phone (390). Rotate with one click. Big sizes are scaled to fit, but the page still sees the real width, so your media queries work.
+- **Console panel** (`Ctrl+Alt+J`): `console.log` / `warn` / `error`, uncaught errors and promise rejections from the page. Click a message to jump to the line. Type JavaScript at the prompt to run it in the page. 404s for missing files show up too.
+- **Devtools:** the WebKit inspector, one click away.
+- **Emmet:** in HTML, type `!`, `ul>li.item$*3`, `.card>h2+p` or `nav>a[href=#]*4` and press `Tab`.
+- **Auto-indent:** Enter between `<div>` and `</div>` puts the cursor on its own indented line. Typing `</` closes the open tag and lines it up. `{` blocks in CSS and JS indent too.
+- **New web page:** `Ctrl+N` → *Web page — HTML + CSS + JS*. You get three linked files, open as tabs, with the preview. Any folder with an `index.html` is detected as a web project, so `F5` previews it.
+- **Export as one HTML file:** inlines the page's local CSS and JS so you can share a single file.
+- Links to other websites open in your normal browser.
+
 ### Boards (Arduino, ESP32, Pico)
 - **Detected automatically:** Arduino sketches (`.ino`, `sketch.yaml`), PlatformIO (`platformio.ini`), ESP-IDF and MicroPython projects. Install the tool you use: `arduino-cli`, `pio`, ESP-IDF or `mpremote`. `aether --doctor` shows what is missing.
 - **Pick a board and a port** from the status bar or the *Device* sidebar page. The choice is saved in `sketch.yaml` or `platformio.ini`. 23 boards are built in (Uno, Nano, Mega, Leonardo, Micro, Uno R4, ESP32 and variants, XIAO, ESP8266, Pico, Pico W, Pico 2) and you can enter any FQBN.
@@ -141,6 +154,7 @@ Ubuntu 22.04 and Debian 11 ship GTK older than 4.8, so use 24.04 / Debian 12 or 
 Branch in the status bar, file badges, a Git panel (stage, unstage, discard, diff, commit, pull/push) and change marks in the gutter.
 
 ### Looks
+- **Your own file and language icons:** put SVG or PNG files in `~/.config/aether/icons/` and they replace the built-in badges in the language picker, the new-project list, the file tree and the tabs. Name them by language (`python.svg`, `javascript.svg`, `html.svg`, `css.svg`, `web.svg` for HTML + CSS + JS) or by extension (`py.svg`, `rs.svg`). You can point the `icon_pack` setting at another folder.
 - 40+ themes (`Ctrl+K`). The default is **Aether Crimson** (black and red); **Obsidian**, **Synthwave**, **Cyberpunk** and **Abyss** are also new.
 - A Theme Studio, VS Code theme import, and 4 layouts (islands, classic, flat, floating).
 - Toasts for build and debug results, a live activity chip in the status bar, and a rotating tip on the welcome screen.
@@ -156,6 +170,10 @@ Branch in the status bar, file badges, a Git panel (stage, unstage, discard, dif
 | Build / tasks | `Ctrl+Shift+B` / `Ctrl+Alt+B` |
 | Run project / run file | `F5` / `Ctrl+F5` |
 | Upload to board / serial monitor | `Ctrl+Alt+U` / `Ctrl+Alt+M` |
+| Web preview / HTML+CSS+JS tabs | `Ctrl+Alt+W` / `Ctrl+Alt+H` |
+| Go to HTML / CSS / JS | `Ctrl+Alt+1` / `2` / `3` |
+| Web console / reload preview | `Ctrl+Alt+J` / `Ctrl+Alt+R` |
+| Emmet (in HTML) | `Tab` |
 | Debug start/continue, stop | `F6`, `Shift+F6` |
 | Step over / into / out | `F10` / `F7` / `Shift+F7` |
 | Toggle breakpoint | `F9` |
@@ -173,7 +191,7 @@ All of these can be changed in Preferences → Keys.
 ## Publishing your own copy
 
 ```bash
-./publish.sh                 # creates github.com/<you>/aether, pushes, makes a v3.1.0 release with the .deb + tarball
+./publish.sh                 # creates github.com/<you>/aether, pushes, makes a v3.2.0 release with the .deb + tarball
 ./publish.sh --name myide    # different repo name   ·   --private   ·   --no-release
 ```
 It installs and logs in to the GitHub CLI (`gh`) if needed. It also points every link (README, `get.sh`, packages, `aether --update`) at your repo. Without `gh`, it falls back to plain `git push`.
@@ -182,12 +200,13 @@ It installs and logs in to the GitHub CLI (`gh`) if needed. It also points every
 
 ```bash
 ./bin/aether        # run from the source tree
-make test           # unit tests (folding, gdb/MI parser, project detection, error parsing, boards and serial)
-xvfb-run -a python3 tests/gui_smoke.py   # headless GUI test of the board features
+make test           # unit tests (folding, gdb/MI parser, project detection, error parsing, boards and serial, web server, Emmet)
+xvfb-run -a python3 tests/gui_smoke.py       # headless GUI test of the board features
+xvfb-run -a python3 tests/web_gui_smoke.py   # headless GUI test of the web preview (uses WebKitGTK if installed)
 make check          # dependency doctor
 ```
 
-Code map: `aether/window.py` (main window), `editor.py` (editor tab), `ide.py` (builds + debugger glue), `debugger.py` (gdb/MI client), `folding.py`, `multicursor.py`, `outline.py`, `project.py` (build systems, templates), `embedded.py` (boards, toolchains, serial port), `embeddedui.py` (Device page, upload flow), `serialmon.py` (serial monitor), `tasks.py` (Build panel), `welcome.py`, `sidebar.py`, `lsp.py` / `lspui.py`, `prefs.py`, `chrome.py` (CSS).
+Code map: `aether/window.py` (main window), `editor.py` (editor tab), `ide.py` (builds + debugger glue), `debugger.py` (gdb/MI client), `folding.py`, `multicursor.py`, `outline.py`, `project.py` (build systems, templates), `embedded.py` (boards, toolchains, serial port), `embeddedui.py` (Device page, upload flow), `serialmon.py` (serial monitor), `webdev.py` (offline preview server, live reload, console bridge), `webui.py` (preview pane, HTML/CSS/JS switcher, console, Web page), `emmet.py`, `tasks.py` (Build panel), `welcome.py`, `sidebar.py`, `lsp.py` / `lspui.py`, `prefs.py`, `chrome.py` (CSS).
 
 ### Rename before you release
 "Aether" is a working name. Run `tools/rename.sh "YourName"` once to rename the command, app ID, themes, icon and desktop files, then update `LICENSE` and `packaging/`.

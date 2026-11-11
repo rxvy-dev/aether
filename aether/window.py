@@ -15,6 +15,7 @@ from .sidebar import Sidebar
 from .extras import ExtrasMixin
 from .ide import IdeMixin
 from .embeddedui import EmbeddedMixin
+from .webui import WebMixin
 from .welcome import Welcome
 from . import icons
 from .editor import EditorTab
@@ -68,7 +69,7 @@ def git_branch(folder):
     return None
 
 
-class AetherWindow(EmbeddedMixin, IdeMixin, ExtrasMixin, Gtk.ApplicationWindow):
+class AetherWindow(WebMixin, EmbeddedMixin, IdeMixin, ExtrasMixin, Gtk.ApplicationWindow):
     def __init__(self, app, settings):
         super().__init__(application=app, title=NAME)
         self.app = app
@@ -347,7 +348,12 @@ class AetherWindow(EmbeddedMixin, IdeMixin, ExtrasMixin, Gtk.ApplicationWindow):
         self.notebook.set_scrollable(True)
         self.notebook.connect("switch-page", self._on_switch)
         self.notebook.connect("page-removed", lambda *_: self._after_tabs_changed())
-        self.stack.add_named(self.notebook, "editor")
+        self.editor_split = Gtk.Paned(orientation=Gtk.Orientation.HORIZONTAL)   # editor | web preview
+        self.editor_split.set_wide_handle(True)
+        self.editor_split.set_start_child(self.notebook)
+        self.editor_split.set_resize_start_child(True)
+        self.editor_split.set_shrink_start_child(False)
+        self.stack.add_named(self.editor_split, "editor")
         self.welcome = Welcome(self)
         self.stack.add_named(self.welcome, "welcome")
         self.stack.set_visible_child_name("welcome")
@@ -400,8 +406,10 @@ class AetherWindow(EmbeddedMixin, IdeMixin, ExtrasMixin, Gtk.ApplicationWindow):
         for w in (self.lsp_label, self.diag_label, self.pos_label, self.indent_label, self.enc_label):
             sb.append(w)
         root.append(sb)
+        icons.set_pack_dir(self.settings["icon_pack"])
         self._ide_setup()
         self._emb_setup()
+        self._web_setup()
         self.sidebar.set_visible(bool(self.settings["sidebar"]))
         self.panel.set_visible(bool(self.settings["terminal"]))
         self._layout_sig = ("left", "bottom")
@@ -458,7 +466,7 @@ class AetherWindow(EmbeddedMixin, IdeMixin, ExtrasMixin, Gtk.ApplicationWindow):
     # ================= actions =================
     def _callbacks(self):
         cur = lambda: self.cur()
-        return {**self._ide_callbacks(),
+        return {**self._ide_callbacks(), **self._web_callbacks(),
             "new": self.act_new, "open": self.act_open, "open_folder": self.act_open_folder, "save": self.act_save,
             "save_as": self.act_save_as, "close_tab": self.act_close_tab, "reopen_tab": lambda *_: self.reopen_tab(),
             "quit": lambda *_: self.close(), "run": self.act_run, "find": lambda *_: self.show_find(False),
@@ -605,6 +613,7 @@ class AetherWindow(EmbeddedMixin, IdeMixin, ExtrasMixin, Gtk.ApplicationWindow):
         tab.connect("state-changed", self._on_tab_state)
         tab.connect("diagnostics", self._on_tab_diags)
         self._ide_tab_added(tab)
+        self._web_tab_added(tab)
         if activate:
             self.notebook.set_current_page(idx)
         self.stack.set_visible_child_name("editor")
@@ -707,6 +716,7 @@ class AetherWindow(EmbeddedMixin, IdeMixin, ExtrasMixin, Gtk.ApplicationWindow):
         if tab.path:
             self.closed_paths.append(tab.path)
             self.lsp_close(tab)
+        self._web_tab_closed(tab)
         if idx >= 0:
             self.notebook.remove_page(idx)
 
@@ -738,6 +748,7 @@ class AetherWindow(EmbeddedMixin, IdeMixin, ExtrasMixin, Gtk.ApplicationWindow):
         if self.settings["panel_position"] == "bottom" and self.panel.get_visible():
             s["panel_pos"] = self.vpane.get_position()
         self.ide_shutdown()
+        self.web_shutdown()
         dirty = [t for t in self.tabs() if t.buffer.get_modified()]
         if not dirty or getattr(self, "_force_close", False):
             self.lsp_shutdown_all()
@@ -751,11 +762,11 @@ class AetherWindow(EmbeddedMixin, IdeMixin, ExtrasMixin, Gtk.ApplicationWindow):
 
     # ================= file actions =================
     def act_new(self, *_):
-        items = []
+        items = [("Web page — HTML + CSS + JS", "3 linked files + live preview", lambda: self.web_new_page(), icons.lang_texture("web"))]
         for k in ("c", "cpp", "python", "rust", "go", "java", "javascript", "typescript", "shellscript", "csharp",
                   "kotlin", "lua", "ruby", "php", "html", "zig", "swift", "dart", "haskell", "elixir", "julia", "r",
                   "perl", "scala", "css", "sql", "makefile", "dockerfile", "markdown", "json", "yaml", "toml"):
-            items.append((templates.PRETTY[k], "new file", (lambda k=k: self.new_untitled(k))))
+            items.append((templates.PRETTY[k], "new file", (lambda k=k: self.new_untitled(k)), icons.lang_texture(k)))
         Palette(self, "New file — pick a language", items).present()
 
     def new_untitled(self, key):
@@ -946,7 +957,7 @@ class AetherWindow(EmbeddedMixin, IdeMixin, ExtrasMixin, Gtk.ApplicationWindow):
                 ("lowercase", "lower_case"), ("Title Case", "title_case"), ("Trim trailing whitespace", "trim_ws"),
                 ("Cycle layout", "cycle_layout"), ("Next theme", "cycle_theme"), ("Toggle status bar", "toggle_statusbar"),
                 ("Toggle line numbers", "toggle_line_numbers")]
-        cmds = cmds + self.IDE_COMMANDS + self.EMB_COMMANDS
+        cmds = cmds + self.IDE_COMMANDS + self.EMB_COMMANDS + self.WEB_COMMANDS
         items = [(n, k(a), (lambda a=a: c[a]())) for n, a in cmds if a in c]
         extra = [("Toggle activity bar", lambda: (self.settings.__setitem__("activity_bar", not self.settings["activity_bar"]), self.apply_activity_bar())),
                  ("Toggle bracket pair colours", lambda: self.set_pref("bracket_colors", not self.settings["bracket_colors"])),
@@ -1060,6 +1071,8 @@ class AetherWindow(EmbeddedMixin, IdeMixin, ExtrasMixin, Gtk.ApplicationWindow):
         t = self.cur()
         if t and t.path and t.path.lower().endswith((".ino", ".pde")):
             self.emb_run()                        # a sketch is never compiled by the host compiler
+            return
+        if self.web_run(force_file):              # HTML / CSS / page scripts / web folders -> live preview
             return
         if not force_file and self.project_run():
             return

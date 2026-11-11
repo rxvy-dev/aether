@@ -1,7 +1,7 @@
 # Maintainer: rxvy <https://github.com/rxvy-dev>
-# Build:  make dist && cp dist/aether-3.1.0.tar.gz packaging/ && cd packaging && makepkg -si
+# Build:  make dist && cp dist/aether-3.2.0.tar.gz packaging/ && cd packaging && makepkg -si
 pkgname=aether
-pkgver=3.1.0
+pkgver=3.2.0
 pkgrel=1
 pkgdesc="Fast IDE for Linux: projects & builds, gdb debugger, LSP, git, folding, multiple cursors"
 arch=('any')
@@ -9,6 +9,7 @@ url="https://github.com/rxvy-dev/aether"
 license=('MIT')
 depends=('python' 'python-gobject' 'python-cairo' 'gtk4' 'gtksourceview5')
 optdepends=('vte4: integrated terminal and the debugger program tab'
+            'webkitgtk-6.0: built-in live web preview (otherwise it opens in your browser)'
             'gdb: debugger'
             'base-devel: build and run C/C++'
             'git: source control, clone, new projects'

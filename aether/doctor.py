@@ -56,6 +56,7 @@ def check():
 
     lines.append("Recommended")
     row(_typelib("Vte", "3.91") is not None, False, "VTE for GTK 4", "integrated terminal + debugger program tab")
+    row(_typelib("WebKit", "6.0") is not None, False, "WebKitGTK 6.0", "built-in live web preview (without it, pages open in your browser)")
     row(shutil.which("gdb") is not None, False, "gdb", "debugger (F6)")
     row(shutil.which("git") is not None, False, "git", "source control, clone, new projects")
     cc = shutil.which("cc") or shutil.which("gcc") or shutil.which("clang")

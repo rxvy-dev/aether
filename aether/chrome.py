@@ -244,4 +244,41 @@ headerbar dropdown.aether-config > button {{ background: {hover}; color: {fg}; b
 .aether-status.debugging .aether-activity .dot {{ color: {p['on_accent']}; }}
 .aether-status.debugging .aether-chip {{ background: rgba(0,0,0,0.2); color: {p['on_accent']}; }}
 notebook.aether-bottom > header.top > tabs > tab {{ font-size: {uipx - 1}px; letter-spacing: 0.4px; }}
+""" + web_css(p, a, fg, gut, border, hover, bg, inner, uipx)
+
+
+def web_css(p, a, fg, gut, border, hover, bg, inner, uipx):
+    """Web preview pane, HTML/CSS/JS switcher, device frames, console."""
+    stage = mix(bg, "#000000", 0.25) if lum(bg) < 0.5 else mix(bg, "#000000", 0.06)
+    return f"""
+.aether-web {{ background: {bg}; border-left: 1px solid {border}; }}
+.aether-web-bar {{ padding: 4px 6px; border-bottom: 1px solid {border}; }}
+.aether-web-bar button {{ min-height: 24px; min-width: 24px; padding: 2px 6px; border-radius: {inner}px; }}
+.aether-web-bar button.flat:hover {{ background: {hover}; }}
+.aether-web-seg {{ background: {rgba(fg, 0.06)}; border-radius: {inner + 2}px; padding: 2px; }}
+.aether-web-seg button {{ font-weight: 700; font-size: {uipx - 1}px; padding: 1px 10px; background: transparent; border: none; box-shadow: none; }}
+.aether-web-seg button.active {{ background: {a}; color: {p['on_accent']}; }}
+.aether-web-seg button.missing {{ opacity: 0.55; }}
+.aether-web-bar button.active {{ color: {a}; background: {rgba(a, 0.14)}; }}
+.aether-web-page {{ font-size: {uipx - 1}px; color: {gut}; }}
+.aether-web-stage {{ background: {stage}; }}
+.aether-web-frame {{ background: #ffffff; }}
+.aether-web-frame.device {{ border: 10px solid #2a2a31; border-radius: 22px; box-shadow: 0 6px 30px rgba(0,0,0,0.45); }}
+.aether-web-frame.device.phone {{ border-width: 12px 8px; border-radius: 30px; }}
+.aether-web-dims {{ color: {gut}; font-size: {uipx - 2}px; padding: 3px 8px; }}
+.aether-web-empty {{ padding: 30px; }}
+.aether-web-empty .title {{ font-size: {uipx + 3}px; font-weight: 700; color: {a}; }}
+.aether-console row {{ padding: 1px 8px; border-bottom: 1px solid {rgba(fg, 0.05)}; }}
+.aether-console row.warn {{ background: {rgba('#e0af68', 0.10)}; }}
+.aether-console row.error {{ background: {rgba('#f7768e', 0.12)}; }}
+.aether-console .lvl {{ font-weight: 800; min-width: 14px; }}
+.aether-console row.warn .lvl {{ color: #e0af68; }}
+.aether-console row.error .lvl, .aether-console row.error .msg {{ color: #ff8b9a; }}
+.aether-console row.result .lvl, .aether-console row.input .lvl {{ color: {a}; }}
+.aether-console row.input .msg {{ color: {gut}; }}
+.aether-console row.page .msg {{ color: {gut}; font-style: italic; }}
+.aether-console .loc {{ color: {gut}; font-size: {uipx - 2}px; }}
+.aether-console-input {{ border-top: 1px solid {border}; padding: 2px 6px; }}
+.aether-console-input entry {{ background: transparent; border: none; box-shadow: none; }}
+.aether-web-filter button {{ padding: 0 8px; min-height: 20px; font-size: {uipx - 2}px; }}
 """

@@ -8,13 +8,17 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-gi python3-gi-cairo gir1.2-gtk-4.0 gir1.2-gtksource-5 gir1.2-vte-3.91 gdb xvfb make
+          sudo apt-get install -y python3-gi python3-gi-cairo gir1.2-gtk-4.0 gir1.2-gtksource-5 gir1.2-vte-3.91 gir1.2-webkit-6.0 gdb xvfb make
       - name: Unit tests
         run: make test PYTHON=/usr/bin/python3
       - name: GUI smoke test (boards)
         run: |
           export GDK_BACKEND=x11 GSK_RENDERER=cairo NO_AT_BRIDGE=1
           xvfb-run -a python3 tests/gui_smoke.py
+      - name: GUI smoke test (web preview, real WebKitGTK)
+        run: |
+          export GDK_BACKEND=x11 GSK_RENDERER=cairo NO_AT_BRIDGE=1 WEBKIT_DISABLE_COMPOSITING_MODE=1
+          xvfb-run -a -s "-screen 0 1600x1000x24" python3 tests/web_gui_smoke.py
       - name: Doctor
         run: make check PYTHON=/usr/bin/python3
       - name: Starts without errors

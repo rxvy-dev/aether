@@ -1,7 +1,7 @@
 """Projects: detect the build system, run build/run/test/clean tasks, create new projects.
 
 Detected (first match wins): embedded (PlatformIO, ESP-IDF, Arduino sketch, MicroPython — see embedded.py),
-Cargo, CMake, Meson, Makefile, Go modules, Zig, npm, Python.
+Cargo, CMake, Meson, Makefile, Go modules, Zig, npm, Python, plain web pages (index.html).
 Every command can be overridden per project in  <project>/.aether/project.json :
 
     { "build": "make -j8", "run": "./bin/app --verbose", "test": "make check",
@@ -174,6 +174,9 @@ def detect(root, config="Debug", cfg=None, port=""):
         if ex("tests") or glob.glob(j("test_*.py")):
             t["test"] = "python3 -m pytest -q"
         return "Python", t
+    for page in ("index.html", "index.htm", "public/index.html", "src/index.html"):
+        if ex(page):                    # plain HTML/CSS/JS: F5 opens the live preview, no build step
+            return "Web", {}
     return None, {}
 
 
@@ -290,29 +293,85 @@ func main() {
 \tfmt.Println("Hello from {name}!")
 }
 """
-WEB_HTML = """<!doctype html>
+WEB_HTML = """<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{name}</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main>
+  <main class="card">
     <h1>{name}</h1>
-    <p>Edit <code>index.html</code>, <code>style.css</code> and <code>script.js</code>.</p>
+    <p>Edit <code>index.html</code>, <code>style.css</code> and <code>script.js</code> — the preview updates as you type.</p>
+    <button id="btn" type="button">Clicked 0 times</button>
   </main>
   <script src="script.js"></script>
 </body>
 </html>
 """
-WEB_CSS = """:root { color-scheme: dark; --bg: #0d0d10; --fg: #e8e8ea; --accent: #e53935; }
-body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--bg); color: var(--fg);
-       font: 16px/1.5 system-ui, sans-serif; }
-h1 { color: var(--accent); }
+WEB_CSS = """:root {
+  color-scheme: dark;
+  --bg: #0d0d10;
+  --fg: #e8e8ea;
+  --accent: #e53935;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  color: var(--fg);
+  font: 16px/1.6 system-ui, sans-serif;
+}
+
+.card {
+  max-width: 560px;
+  padding: 32px;
+  border: 1px solid #26262c;
+  border-radius: 14px;
+}
+
+h1 {
+  margin-top: 0;
+  color: var(--accent);
+}
+
+button {
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .card {
+    padding: 20px;
+    border: 0;
+  }
+}
 """
-WEB_JS = 'console.log("{name} loaded");\n'
+WEB_JS = """const btn = document.querySelector("#btn");
+let clicks = 0;
+
+btn.addEventListener("click", () => {
+  clicks += 1;
+  btn.textContent = `Clicked ${clicks} time${clicks === 1 ? "" : "s"}`;
+  console.log("clicks:", clicks);
+});
+
+console.log("{name} loaded");
+"""
 SH_MAIN = """#!/usr/bin/env bash
 set -euo pipefail
 
@@ -334,7 +393,7 @@ TEMPLATES = {
     "python": ("Python", "main.py with a main() function", {"main.py": PY_MAIN, "requirements.txt": ""}, "main.py"),
     "rust": ("Rust — Cargo", "Cargo.toml + src/main.rs", {"Cargo.toml": RUST_TOML, "src/main.rs": RUST_MAIN}, "src/main.rs"),
     "go": ("Go module", "go.mod + main.go", {"go.mod": GO_MOD, "main.go": GO_MAIN}, "main.go"),
-    "web": ("Web page", "index.html + style.css + script.js", {"index.html": WEB_HTML, "style.css": WEB_CSS, "script.js": WEB_JS}, "index.html"),
+    "web": ("Web page — HTML + CSS + JS", "index.html + style.css + script.js, live preview (Ctrl+Alt+W)", {"index.html": WEB_HTML, "style.css": WEB_CSS, "script.js": WEB_JS}, "index.html"),
     "bash": ("Bash script", "main.sh with strict mode", {"main.sh": SH_MAIN}, "main.sh"),
 }
 

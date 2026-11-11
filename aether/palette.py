@@ -39,10 +39,17 @@ class Palette(Gtk.Window):
             sw.set_child(self.list)
             box.append(sw)
         self.set_child(box)
-        for label, sub, cb in self.items:
+        for item in self.items:
+            label, sub, cb = item[:3]
+            icon = item[3] if len(item) > 3 else None      # optional Gdk.Paintable shown before the label
             row = Gtk.ListBoxRow()
             h = Gtk.Box(spacing=12)
             h.set_margin_top(4); h.set_margin_bottom(4); h.set_margin_start(6); h.set_margin_end(6)
+            if icon is not None:
+                img = Gtk.Image.new_from_paintable(icon)
+                img.set_pixel_size(22)
+                img.add_css_class("aether-palette-icon")
+                h.append(img)
             l1 = Gtk.Label(label=label, xalign=0)
             l1.set_hexpand(True)
             h.append(l1)

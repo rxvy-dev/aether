@@ -31,6 +31,11 @@ DEFAULTS = {
     # embedded boards: Arduino, ESP32, Pico, MicroPython
     "upload": ["<Control><Alt>u"], "serial_monitor": ["<Control><Alt>m"], "select_board": [], "select_port": [],
     "reset_board": [], "install_library": [], "search_library": [], "board_setup": [], "show_device": [],
+    # web: live preview, HTML / CSS / JS switcher, console
+    "web_preview": ["<Control><Alt>w"], "web_tabs": ["<Control><Alt>h"], "web_html": ["<Control><Alt>1"],
+    "web_css": ["<Control><Alt>2"], "web_js": ["<Control><Alt>3"], "web_browser": [], "web_reload": ["<Control><Alt>r"],
+    "web_new_page": [], "web_export": [], "web_pages": [], "web_console": ["<Control><Alt>j"], "web_devtools": [],
+    "web_responsive": [], "web_desktop": [], "web_tablet": [], "web_phone": [], "show_web": [],
 }
 LABELS = {
     "new": "New file", "open": "Open file", "open_folder": "Open folder", "save": "Save", "save_as": "Save as",
@@ -62,6 +67,12 @@ LABELS = {
     "upload": "Upload to board", "serial_monitor": "Open serial monitor", "select_board": "Select board",
     "select_port": "Select serial port", "reset_board": "Reset board", "install_library": "Install library / package",
     "search_library": "Search libraries", "board_setup": "Install board support", "show_device": "Show boards & serial",
+    "web_preview": "Web: toggle live preview", "web_tabs": "Web: open HTML + CSS + JS tabs", "web_html": "Web: go to HTML",
+    "web_css": "Web: go to CSS", "web_js": "Web: go to JS", "web_browser": "Web: open in browser",
+    "web_reload": "Web: reload preview", "web_new_page": "Web: new page", "web_export": "Web: export as one file",
+    "web_pages": "Web: preview pages", "web_console": "Web: show console", "web_devtools": "Web: devtools",
+    "web_responsive": "Web: responsive size", "web_desktop": "Web: desktop size", "web_tablet": "Web: tablet size",
+    "web_phone": "Web: phone size", "show_web": "Show web sidebar",
 }
 
 

@@ -13,7 +13,7 @@ Section: devel
 Priority: optional
 Architecture: all
 Depends: python3 (>= 3.9), python3-gi, python3-gi-cairo, gir1.2-gtk-4.0 (>= 4.8), gir1.2-gtksource-5
-Recommends: gir1.2-vte-3.91, gdb, build-essential, git
+Recommends: gir1.2-vte-3.91, gir1.2-webkit-6.0, gdb, build-essential, git
 Suggests: clangd, shellcheck, clang-format
 Maintainer: rxvy <https://github.com/rxvy-dev>
 Homepage: https://github.com/rxvy-dev/aether
